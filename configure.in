@@ -51,8 +51,6 @@ fi
 
 AC_PATH_PROG(XML2_CONFIG, xml2-config, no)
 
-AC_CHECK_LIB(xml2, xmlNewDoc, , [XML2_CONFIG="no"])
-
 if test "$XML2_CONFIG" = "no" ; then
 	echo "*************************************************************"
 	echo "  libxml2 not found. "
