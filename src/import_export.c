@@ -19,77 +19,136 @@
  */
 
 #include <pwman.h>
+#include <ui.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
 int
 export_passwd(Pw *pw)
 {
-	char *filename, *text, *cmd;
-	char id[MED_STR];
-	FILE *fp;
+	char vers[5];
+	char id[MED_STR], file[LONG_STR];
+	
 	xmlDocPtr doc;
 	xmlNodePtr root;
-	
-	if(pw == NULL){
+
+	if(check_gnupg() != 0){
+		debug("export_passwd: gnupg not found");
+		return -1;
+	}
+	if(!pw){
+		debug("export_passwd: bad password");
+		statusline_msg("Bad password");
+		return -1;
+	}
+
+	get_gnupg_id(id);
+	if(id[0] == 0){
+		debug("export_passwd: cancel because id is blank");
 		return -1;
 	}
 	
-	filename = malloc(V_LONG_STR);
-	cmd = malloc(V_LONG_STR);
-	text = malloc(LONG_STR);
-	
-	statusline_ask_str("Export password to file:", filename, LONG_STR);
-	statusline_ask_str("GnuPG ID to export to:", id, MED_STR);
+	get_filename(file, 'w');
 
-	/*
-	 * do writing bit
-	 */
+	debug("export_passwd: construct xml doc");
+	snprintf(vers, 5, "%d", FF_VERSION);
 	doc = xmlNewDoc((xmlChar*)"1.0");
-
+	
 	root = xmlNewDocNode(doc, NULL, (xmlChar*)"PWMan_Export", NULL);
+
+	xmlSetProp(root, "version", vers);
+	
+	write_password_node(root, pw);
 
 	xmlDocSetRootElement(doc, root);
 
-	write_password_node(root, pw);
-
-	gnupg_write(doc, id, filename);
-
-	xmlFreeDoc(doc);
+	gnupg_write(doc, id, file);
 	
-	free(filename);
-	free(cmd);
-	free(text);
+	xmlFreeDoc(doc);
+	return 0;
+}
+
+int
+export_passwd_list(PWList *pwlist)
+{
+	char vers[5];
+	char id[MED_STR], file[LONG_STR];
+	
+	xmlDocPtr doc;
+	xmlNodePtr root;
+
+	if(check_gnupg() != 0){
+		debug("export_passwd_list: gnupg not found");
+		return -1;
+	}
+	if(!pwlist){
+		debug("export_passwd_list: bad password");
+		statusline_msg("Bad password");
+		return -1;
+	}
+
+	get_gnupg_id(id);
+	if(id[0] == 0){
+		debug("export_passwd_list: cancel because id is blank");
+		return -1;
+	}
+	
+	get_filename(file, 'w');
+
+	debug("export_passwd_list: construct xml doc");
+	snprintf(vers, 5, "%d", FF_VERSION);
+	doc = xmlNewDoc((xmlChar*)"1.0");
+	
+	root = xmlNewDocNode(doc, NULL, (xmlChar*)"PWMan_Export", NULL);
+
+	xmlSetProp(root, "version", vers);
+	
+	write_pwlist(root, pwlist);
+
+	xmlDocSetRootElement(doc, root);
+
+	gnupg_write(doc, id, file);
+	
+	xmlFreeDoc(doc);
+	return 0;
 }
 
 int
 import_passwd()
 {
-	char *filename;
-	xmlDocPtr doc;
+	char file[LONG_STR], *buf, *cmd, *s, *text;
+	int i = 0;
 	xmlNodePtr node, root;
+	xmlDocPtr doc;
 
-	filename = malloc(LONG_STR);
-	statusline_ask_str("Enter file to import password from:", filename, LONG_STR);
+	get_filename(file, 'r');
+
+	gnupg_read(file, &doc);	
 	
-	gnupg_read(filename, &doc);
-	/*doc = xmlParseFile(options->password_file);*/
 	if(!doc){
-		statusline_msg("Bad password data or incorrect passphrase\n");
+		debug("import_passwd: bad data");
 		return -1;
 	}
 	root = xmlDocGetRootElement(doc);
 	if(!root || !root->name	|| (strcmp((char*)root->name, "PWMan_Export") != 0) ){
-		statusline_msg("Badly Formed password data\n");
-		getch();
+		statusline_msg("Badly Formed password data");
 		return -1;
 	}
+	i = atoi( xmlGetProp(root, (xmlChar*)"version") );
+	if(i < FF_VERSION){
+		statusline_msg("Password Export File in older format, use convert_pwdb");
+		return -1;
+	}
+	
 	for(node = root->children; node != NULL; node = node->next){
-		if(!node || !node->name){
-			statusline_msg("Messed up xml node\n");
-		} else if( strcmp((char*)node->name, "PW_Item") == 0){
-			read_password_node(node);
+		if(strcmp(node->name, "PwList") == 0){
+			read_pwlist(node, current_pw_sublist);
+			break;
+		} else if(strcmp(node->name, "PwItem") == 0){
+			read_password_node(node, current_pw_sublist);
+			break;
 		}
 	}
 	xmlFreeDoc(doc);
+	return 0;
 }

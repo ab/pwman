@@ -24,7 +24,7 @@
 #include <time.h>
 
 char * statusline_ask_str(char *, char*, int);
-Pw *get_current_item();
+Pw *get_highlighted_item();
 
 int should_resize = FALSE;
 int can_resize = FALSE;
@@ -177,6 +177,9 @@ run_ui()
 	Pw *current_item;
 	int ch;
 	int i = 0;
+#ifdef DEBUG
+	int debug_i = 0;
+#endif
 	char msg[80];
 
 	time_base = time(NULL);
@@ -211,6 +214,12 @@ run_ui()
 			case '?':
 				display_help();
 				break;
+			case KEY_PPAGE:
+				list_page_up();
+				break;
+			case KEY_NPAGE:
+				list_page_down();
+				break;
 			case KEY_UP:
 			case 'j':
 				list_up();
@@ -219,20 +228,34 @@ run_ui()
 			case 'k':
 				list_down();
 				break;
+			case 'A':
+				list_add_sublist();
+				break;
+			case 'U':
+				list_up_one_level();
+				break;
 			case 'a':
-				add_pw_ui();
+				list_add_pw();
 				write_file();
 				break;
 			case 'e':
 			case ' ':
 			case 13:
-				current_item = get_current_item();
-				edit_pw(current_item);
+				list_select_item();
+				/*current_item = get_current_item();
+				if(current_item){
+					edit_pw(current_item);
+				}*/
 				break;
 			case 'd':
 			case 0x14A:
-				current_item = get_current_item();
-				delete_pw_ui(current_item);
+				list_delete_item();
+				break;
+			case 'm':
+				list_move_item();
+				break;
+			case 'M':
+				list_move_item_up_level();
 				break;
 			case 'h':
 				hide_cursor();
@@ -264,19 +287,24 @@ run_ui()
 				get_filter();
 				break;
 			case 'E':
-				current_item = get_current_item();
-				export_passwd(current_item);
+				list_export();
 				break;
 			case 'I':
 				import_passwd();
 				refresh_list();
 				break;
 			case 'l':
-				current_item = get_current_item();
-				i = launch(current_item);
-				snprintf(msg, 80, "Application exited with code %d", i);
-				statusline_msg(msg);
+				list_launch();
 				break;
+#ifdef DEBUG
+			case '$':
+				debug_i++;
+				snprintf(msg, 80, "Name %d", debug_i);
+					
+				add_pw(current_pw_sublist, msg, "myhost", "myuser", "mypasswd", "mylaucnh");
+				refresh_list();
+				break;
+#endif
 			default:
 				break;
 		}
@@ -444,7 +472,7 @@ statusline_ask_str_with_autogen(char *msg, char *input, int len, char *(*autogen
 }
 
 char *
-statusline_ask_passwd(char *msg, char *input, int len)
+statusline_ask_passwd(char *msg, char *input, int len, int cancel)
 {
 	int i = 0;
 	int c;
@@ -463,15 +491,20 @@ statusline_ask_passwd(char *msg, char *input, int len)
 
 	while(i < len){
 		c = wgetch(bottom);
-		if(c == 0x7f){
+		if(c == 0x7f){ /* 0x7f = delete */
 			if(i){
 				i--;
 				mvwaddch(bottom, 1, x+i, ' ');
 				wmove(bottom, 1, x+i);
 			}
-		} else if(c == 0xd){
+		} else if(c == 0xd){ /* 0xd == enter/return */
 			input[i] = 0;
 			break;
+		} else if(c == cancel){
+			free(input);
+			input = NULL;
+
+			return input;
 		} else {
 			input[i] = c;
 			mvwaddch(bottom, 1, x + i, '*');

@@ -29,27 +29,60 @@ int pwindex = 0;
 extern int errno;
 void free_pw(Pw*);
 
+
+PWList *
+new_pwlist(char *name)
+{
+	PWList *new;
+	new = malloc( sizeof(PWList) );
+	new->name = malloc(NAME_LEN);
+	strncpy(new->name, name, NAME_LEN);
+	new->parent = NULL;
+	new->list = NULL;
+	new->sublists = NULL;
+	debug("new_pwlist: %s", name);
+
+	return new;
+}
+
 int
 init_database()
 {
 	pwindex = 0;
 	pwlist = NULL;
+	current_pw_sublist = NULL;
+}
+
+int 
+free_pwlist(PWList *old)
+{
+	Pw *current, *next;
+	PWList *curlist, *nlist;
+
+	if(old == NULL){
+		return 0;
+	}
+	for(current = old->list; current != NULL; current = next){
+		next = current->next;
+
+		free_pw(current);
+	}
+	for(curlist = old->sublists; curlist != NULL; curlist = nlist){
+		nlist = curlist->next;
+
+		free_pwlist(curlist);
+	}
+	
+	free(old->name);
+	free(old);
+	old = NULL;
+	return 0;
 }
 
 int
 free_database()
 {
-	Pw *current, *next;
-
-	current = pwlist;
-	while(current != NULL){
-		next = current->next;
-
-		free_pw(current);
-
-		current = next;
-	}
-	pwlist = NULL;
+	free_pwlist(pwlist);
 	return 0;
 }
 
@@ -86,10 +119,10 @@ free_pw(Pw *old)
 }
 
 int
-add_pw(char* name, char* host, char* user, char* passwd, char* launch)
+add_pw(PWList *parent, char* name, char* host, char* user, char* passwd, char* launch)
 {
 	Pw* new = new_pw();
-	Pw* current;
+	
 	new->id = pwindex++;
 	strncpy(new->name, name, NAME_LEN);
 	strncpy(new->host, host, HOST_LEN);
@@ -97,9 +130,21 @@ add_pw(char* name, char* host, char* user, char* passwd, char* launch)
 	strncpy(new->passwd, passwd, PASS_LEN);
 	strncpy(new->launch, launch, LAUNCH_LEN);
 
-	current = pwlist;
-	if(!pwlist){
-		pwlist = new;
+	add_pw_ptr(parent, new);
+
+	return 0;
+}
+
+int 
+add_pw_sublist(PWList *parent, PWList *new)
+{
+	PWList *current;
+
+	current = parent->sublists;
+	new->parent = parent;
+	if(current == NULL){
+		debug("add_pw_sublist: current = NULL");
+		parent->sublists = new;
 		new->next = NULL;
 		return 0;
 	}
@@ -113,17 +158,26 @@ add_pw(char* name, char* host, char* user, char* passwd, char* launch)
 }
 
 int
-add_pw_ptr(Pw *new)
+add_pw_ptr(PWList *list, Pw *new)
 {
 	Pw *current;
 	
-	if(pwlist == NULL){
-		pwlist = new;
+	if(list == NULL){
+		debug("add_pw_ptr : Bad PwList");
+		return -1;
+	}
+	if(new == NULL){
+		debug("add_pw_ptr : Bad Pw");
+		return -1;
+	}
+	if(list->list == NULL){
+		list->list = new;
 		new->next = NULL;
 		return 0;
 	}
 
-	current = pwlist;
+	debug("add_pw_ptr: add to list");
+	current = list->list;
 	while(current->next != NULL){
 		current = current->next;
 	}
@@ -134,16 +188,36 @@ add_pw_ptr(Pw *new)
 }
 
 int 
-delete_pw(Pw *pw)
+detach_pw(PWList *list, Pw *pw)
 {
 	Pw *iter, *prev;
 
 	prev = NULL;
-	for(iter = pwlist; iter != NULL; iter = iter->next){
+	for(iter = list->list; iter != NULL; iter = iter->next){
 		
 		if(iter == pw){
 			if(prev == NULL){
-				pwlist = iter->next;
+				list->list = iter->next;
+			} else {
+				prev->next = iter->next;
+			}
+			break;
+		}
+		prev = iter;
+	}
+}
+
+int 
+delete_pw(PWList *list, Pw *pw)
+{
+	Pw *iter, *prev;
+
+	prev = NULL;
+	for(iter = list->list; iter != NULL; iter = iter->next){
+		
+		if(iter == pw){
+			if(prev == NULL){
+				list->list = iter->next;
 			} else {
 				prev->next = iter->next;
 			}
@@ -155,11 +229,52 @@ delete_pw(Pw *pw)
 }
 
 int 
+detach_pw_sublist(PWList *parent, PWList *old)
+{
+	PWList *iter, *prev;
+
+	prev = NULL;
+	for(iter = parent->sublists; iter != NULL; iter = iter->next){
+
+		if(iter == old){
+			if(prev == NULL){
+				parent->sublists = iter->next;
+			} else {
+				prev->next = iter->next;
+			}
+			break;
+		}
+		prev = iter;
+	}
+}
+
+int
+delete_pw_sublist(PWList *parent, PWList *old)
+{
+	PWList *iter, *prev;
+
+	prev = NULL;
+	for(iter = parent->sublists; iter != NULL; iter = iter->next){
+
+		if(iter == old){
+			if(prev == NULL){
+				parent->sublists = iter->next;
+			} else {
+				prev->next = iter->next;
+			}
+			free_pwlist(iter);
+			break;
+		}
+		prev = iter;
+	}
+}
+
+int 
 write_password_node(xmlNodePtr root, Pw* pw)
 {
 	xmlNodePtr node;
 
-	node = xmlNewChild(root, NULL, (xmlChar*)"PW_Item", NULL);
+	node = xmlNewChild(root, NULL, (xmlChar*)"PwItem", NULL);
 	xmlNewChild(node, NULL, (xmlChar*)"name", (xmlChar*)pw->name);
 	xmlNewChild(node, NULL, (xmlChar*)"host", (xmlChar*)pw->host);
 	xmlNewChild(node, NULL, (xmlChar*)"user", (xmlChar*)pw->user);
@@ -168,28 +283,42 @@ write_password_node(xmlNodePtr root, Pw* pw)
 }
 
 int
+write_pwlist(xmlNodePtr parent, PWList *list)
+{
+	xmlNodePtr node;
+	Pw *iter;
+	PWList *pwliter;
+	
+	node = xmlNewChild(parent, NULL, (xmlChar*)"PwList", NULL);
+	xmlSetProp(node, (xmlChar*)"name", (xmlChar*)list->name);	
+	
+	for(iter = list->list; iter != NULL; iter = iter->next){
+		write_password_node(node, iter);
+	}
+	for(pwliter = list->sublists; pwliter != NULL; pwliter = pwliter->next){
+		write_pwlist(node, pwliter);
+	}
+}
+
+int
 write_file()
 {
-	Pw *iter;
-	char *cmd;
+	char vers[5];
 	xmlDocPtr doc;
-	xmlNodePtr node, root;
-	FILE *fp;
+	xmlNodePtr root;
 
-	if(!options->password_file){
-		statusline_msg("Password file not set\n");
-		return -1;
-	}
 	if(!pwlist){
-		statusline_msg("Bad password list\n");
+		debug("write_file: bad password file");
+		statusline_msg("Bad password list");
 		return -1;
 	}
+	snprintf(vers, 5, "%d", FF_VERSION);
 	doc = xmlNewDoc((xmlChar*)"1.0");
 	
-	root = xmlNewDocNode(doc, NULL, (xmlChar*)"PWMan_List", NULL);
-	for(iter = pwlist; iter != NULL; iter = iter->next){
-		write_password_node(root, iter);
-	}
+	root = xmlNewDocNode(doc, NULL, (xmlChar*)"PWMan_PasswordList", NULL);
+
+	xmlSetProp(root, "version", vers);
+	write_pwlist(root, pwlist);
 
 	xmlDocSetRootElement(doc, root);
 
@@ -200,7 +329,7 @@ write_file()
 }
 
 void
-read_password_node(xmlNodePtr parent)
+read_password_node(xmlNodePtr parent, PWList *list)
 {
 	Pw* new;
 	xmlNodePtr node;
@@ -210,8 +339,7 @@ read_password_node(xmlNodePtr parent)
 
 	for(node = parent->children; node != NULL; node = node->next){
 		if(!node || !node->name){
-			statusline_msg("Messed up xml node\n");
-			getch();
+			debug("Messed up xml node");
 		} else if( strcmp((char*)node->name, "name") == 0){
 			text = (char*)xmlNodeGetContent(node);
 			if(text) strncpy(new->name, text, NAME_LEN);
@@ -229,37 +357,79 @@ read_password_node(xmlNodePtr parent)
 			if(text) strncpy(new->launch, text, LAUNCH_LEN);
 		} 
 	}
-	add_pw_ptr(new);
+	add_pw_ptr(list, new);
+}
+
+int
+read_pwlist(xmlNodePtr parent, PWList *parent_list)
+{
+	xmlNodePtr node;
+	PWList *new;
+
+	char name[NAME_LEN];
+	if(!parent || !parent->name){
+		statusline_msg("Messed up xml node");
+		return -1;
+	}
+	if(strcmp((char*)parent->name,"PwList") == 0){
+		strncpy(name, xmlGetProp(parent, (xmlChar*)"name"), NAME_LEN);
+		new = new_pwlist(name);
+
+		for(node = parent->children; node != NULL; node = node->next){
+			if(!node || !node->name){
+				debug("read_pwlist: messed up child node");
+			} else if(strcmp(node->name, "PwList") == 0){
+				read_pwlist(node, new);
+			} else if(strcmp(node->name, "PwItem") == 0){
+				read_password_node(node, new);
+			}
+		}
+	}
+
+	if(parent_list == NULL){
+		pwlist = new;
+		current_pw_sublist = pwlist;
+	} else {
+		add_pw_sublist(parent_list, new);
+	}
+	return 0;
 }
 
 int
 read_file()
 {
 	char *buf, *cmd, *s, *text;
-	FILE *fp;
-	int i;
+	int i = 0;
 	xmlNodePtr node, root;
 	xmlDocPtr doc;
-	
-	while((i = gnupg_read(options->password_file, &doc)) == GPGME_No_Passphrase){	
-		statusline_msg("Bad passphrase");
-		getch();
+
+	if(!options->password_file){
+		return -1;
 	}
-	if(i != 0 || !doc){
+	gnupg_read(options->password_file, &doc);	
+	
+	if(!doc){
 		statusline_msg("Bad xml Data");
 		return -1;
 	}
 	root = xmlDocGetRootElement(doc);
-	if(!root || !root->name	|| (strcmp((char*)root->name, "PWMan_List") != 0) ){
+	if(!root || !root->name	|| (strcmp((char*)root->name, "PWMan_PasswordList") != 0) ){
 		statusline_msg("Badly Formed password data");
 		return -1;
 	}
+	i = atoi( xmlGetProp(root, (xmlChar*)"version") );
+	if(i < FF_VERSION){
+		statusline_msg("Password File in older format, use convert_pwdb");
+		return -1;
+	}
+	
 	for(node = root->children; node != NULL; node = node->next){
-		if(!node || !node->name){
-			statusline_msg("Messed up xml node");
-		} else if( strcmp((char*)node->name, "PW_Item") == 0){
-			read_password_node(node);
+		if(strcmp(node->name, "PwList") == 0){
+			read_pwlist(node, NULL);
+
+			break;
 		}
 	}
 	xmlFreeDoc(doc);
+	return 0;
 }

@@ -18,29 +18,198 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+
+/*
+ * define for strings to check for with regex
+ * should allow for internationalization
+ */
+
+#define GPG_ERR_CANTWRITE	"file create error"
+#define GPG_ERR_CANTOPEN 	"can't open"
+#define GPG_ERR_BADPASSPHRASE	"bad passphrase"
+#define GPG_ERR_NOSECRETKEY	"secret key not available"
+
+/* end defines */
+
+#include <sys/stat.h>
 #include <pwman.h>
+#include <ui.h>
 #include <gpgme.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/types.h>
+#include <regex.h>
+#include <fcntl.h>
+
+#define STDOUT 0
+#define STDIN 1
+#define STDERR 2
 
 GpgmeCtx ctx;
 int passphrase_good = 0;
+extern int errno;
+
+int 
+gnupg_exec(char *path, char *args[], FILE *stream[3])
+{
+	int stdin_fd[2];
+	int stdout_fd[2];
+	int stderr_fd[2];
+	int pid;
+
+	pipe(stdin_fd);
+	pipe(stdout_fd);
+	pipe(stderr_fd);
+
+	pid = fork();
+
+	if( (path == NULL) || (args == NULL) ){
+		return -1;
+	}
+	if(pid == 0){
+		close(stdout_fd[0]);
+		close(stdin_fd[1]);
+		close(stderr_fd[0]);
+
+		dup2(stdout_fd[1], fileno(stdout));
+		dup2(stdin_fd[0], fileno(stdin));
+		dup2(stderr_fd[1], fileno(stderr));
+
+		execv(path, args);
+	} else {
+		close(stdout_fd[1]);
+		close(stdin_fd[0]);
+		close(stderr_fd[1]);
+
+		if(stream != NULL){
+			stream[STDOUT] = fdopen(stdout_fd[0], "r");
+			stream[STDIN] = fdopen(stdin_fd[1], "w");
+			stream[STDERR] = fdopen(stderr_fd[0], "r");
+		}
+		
+		return pid;
+	}
+}
+
+void
+gnupg_exec_end(int pid)
+{
+	waitpid(pid, NULL, 0);
+}
+
+char *
+add_to_buf(char *buf, char *new)
+{
+	size_t size;
+
+	if(new == NULL){
+		return buf;
+	}
+	if(buf == NULL){
+		buf = malloc(strlen(new)+1);
+		strncpy(buf, new, strlen(new)+1);
+		return buf;
+	}
+	
+	size = strlen(buf) + strlen(new) + 1;
+	buf = (char*)realloc(buf, size);
+	strncat(buf, new, size);
+	
+	return buf;
+}
+
+int
+str_in_buf(char *buf, char *check)
+{
+	regex_t reg;
+	
+	regcomp(&reg, check ,0);
+	if(regexec(&reg, buf, 0, NULL , 0) == 0){
+		regfree(&reg);
+		return 1;
+	} else {
+		regfree(&reg);
+		return 0;
+	}
+}
+
+int
+gnupg_find_recp(char *str, char *user)
+{
+	regex_t reg;
+	regmatch_t pmatch;
+	int i[3];
+
+	regcomp(&reg, "\"", 0);
+	regexec(&reg, str, 1, &pmatch, 0);
+	i[0] = pmatch.rm_eo;
+	regexec(&reg, str, 1, &pmatch, 0);
+	i[1] = pmatch.rm_so;
+
+	i[2] = i[1] - i[0];
+	user = malloc(i[2]+1);
+	strncpy(user, str+i[0], i[2]);
+}
+
+void
+get_gnupg_id(char *id)
+{
+	while(1){
+		id = statusline_ask_str("Recipient:", id, MED_STR);
+		if(id[0] == 0){
+			return;
+		}
+		if(check_gnupg_id(id) == 0){
+			return;
+		}
+		debug("get_gnupg_id: if here is reached id is bad");
+		statusline_msg("Bad Recipient, Try again"); getch();
+	}
+}
+
+char *
+get_filename(char *filename, char rw)
+{
+	char *buf = NULL;
+
+	if(rw == 'r'){
+		buf = statusline_ask_str("File to read from:", buf, LONG_STR);
+	} else if(rw == 'w'){
+		buf = statusline_ask_str("File to write to:", buf, LONG_STR);
+	} else {
+		return;
+	}
+
+	if(buf[0] == '~' && getenv("HOME")){
+		snprintf(filename, LONG_STR, "%s%s\0", getenv("HOME"), buf+1);
+		debug("get_filename: expanded filename %s", filename);
+	}  else {
+		strncpy(filename, buf, LONG_STR);
+	}
+	if(buf != NULL){
+		free(buf);
+	}
+}
+
 
 const char *
-get_passphrase(void *HOOK, const char *DESC, void **R_HD)
+get_passphrase()
 {
-	static char passphrase[V_LONG_STR];
+	static char *passphrase = NULL;
 
 /*	passphrase == malloc(V_LONG_STR);*/
 	if((time_base >= (time(NULL) - (options->passphrase_timeout*60))) && (passphrase_good == 1)){
 		return passphrase;
 	}
-	if(DESC){
-		passphrase_good = 0;
-		statusline_ask_passwd("Please enter your passphrase:", passphrase, V_LONG_STR);
-	}
+	
+	passphrase_good = 0;
+
+	passphrase = statusline_ask_passwd("Enter passphrase(^G to Cancel):", passphrase, 
+			V_LONG_STR, 0x07); /* 0x07 == ^G */
+	passphrase_good = 1;
+
 	return passphrase;
 }
 
@@ -48,144 +217,328 @@ void
 forget_passphrase()
 {
 	passphrase_good = 0;
+
+	debug("forget_passphrase: passphrase forgotten");
 	statusline_msg("Passphrase forgotten");
 }
-
+/*
 int
-init_gpgme()
+check_gnupg_passphrase(char *filename)
 {
-	gpgme_new(&ctx);
-	gpgme_set_armor(ctx, 1);
-	gpgme_set_passphrase_cb(ctx, get_passphrase, NULL);
-}
+	regex_t reg;
+	char *passphrase, *args[9], buf[80];
+	FILE *streams[3];
+	int pid, good = 1;
 
-int
-quit_gpgme()
-{
-	gpgme_release(ctx);
-}
+	args[0] = "gpg";
+	args[1] = "--passphrase-fd";
+	args[2] = "0";
+	args[3] = "--no-verbose";
+	args[4] = "--batch";
+	args[5] = "--output";
+	args[6] = "/dev/null";
+	args[7] = filename;
+	args[8] = NULL;
 
-static void
-check_gnupg_id(char *id)
-{
-	int i;
-	char *text;
-	GpgmeKey key;
+	while(1){
+		passphrase = (char *)get_passphrase();
+		good = 1;
 
-	text = malloc(LONG_STR);
-	
-	do {
-		gpgme_op_keylist_start(ctx, id, 0);
-		
-		i = gpgme_op_keylist_next(ctx, &key);
-		if(i == GPGME_EOF){
-			snprintf(text, LONG_STR, "Cannot find public key for %s", id);
-			statusline_msg(text);
-			getch();
-			statusline_ask_str("Please enter another GnuPG ID:", id, SHORT_STR);
+		if((passphrase == NULL) || (passphrase[0] == 0)){
+			return -1;
 		}
-		gpgme_op_keylist_end(ctx);
-	} while (i == GPGME_EOF);
 
-	free(text);
+		pid = gnupg_exec(options->gpg_path, args, streams);
+
+		fputs(passphrase, streams[STDIN]);
+		fputc( '\n', streams[STDIN]);
+		fclose(streams[STDIN]);
+
+		while(fgets(buf, 79, streams[STDERR]) != NULL){
+			regcomp(&reg, "public key decryption failed: bad passphrase",0);
+			if(regexec(&reg, buf, 0, NULL , 0) == 0){
+				good = 0;
+				break;
+			}
+		}
+		gnupg_exec_end(pid);
+	
+		if(good){
+			("good pasphrase");
+			return 0;
+		}
+	}
 }
-
-void
-check_file(char *filename)
+*/
+/*int
+check_gnupg_id(char *id, int sec)
 {	
-	FILE *fp;
-	char dir[LONG_STR];
+	regex_t reg;
+	int pid;
+	char text[V_LONG_STR], idstr[LONG_STR], *args[3];
+	FILE *streams[3];
 	
-	while(1) {
-		if((filename[0] == '~') && getenv("HOME") ){
-			snprintf(filename, LONG_STR, "%s%s", getenv("HOME"), filename+1);					
-		}
-		fp = fopen(filename, "a");
-		if(!fp){
-			statusline_msg("Cannot write to specified file, please enter a new filename");
-			getch();
-			statusline_ask_str("File to write to:", filename, LONG_STR);
-		} else {
-			fclose(fp);
-			break;
-		}
-	} 
+	debug("check_gnupg_id: check gnupg id");	
+	if( strchr(id, '%') ){ * hmm, could be format string bug so tell fuck off *
+		return 0;
+	} else {
+		snprintf(idstr, LONG_STR, "[^<]*<%s>", id);
+	}
+	args[0] = "gpg";
+	if(sec){
+		args[1] = "--list-secret-keys";
+	} else {
+		args[1] = "--list-keys";
+	}
+	args[2] = NULL;
 
+	pid = gnupg_exec(options->gpg_path, args, streams);
+
+	//close( fileno(streams[STDERR]) );
+	while( fgets(text, 80, streams[STDOUT]) ){
+		regcomp(&reg, idstr,0);
+		if(regexec(&reg, text, 0, NULL , 0) == 0){
+			gnupg_exec_end(pid);
+			return 1; 
+		}
+	}
+	
+	gnupg_exec_end(pid);
+	
+	return 0;
+}*/
+
+int
+check_gnupg_id(char *id)
+{	
+	regex_t reg;
+	int pid;
+	char text[V_LONG_STR], idstr[LONG_STR], *args[3];
+	FILE *streams[3];
+	
+	debug("check_gnupg_id: check gnupg id");	
+
+	if( strchr(id, '%') ){ /* hmm, could be format string bug so tell fuck off */
+		return -1;
+	} else {
+		snprintf(idstr, LONG_STR, "[^<]*<%s>", id);
+	}
+	args[0] = "gpg";
+	args[1] = "--list-keys";
+	args[2] = NULL;
+
+	pid = gnupg_exec(options->gpg_path, args, streams);
+
+	while( fgets(text, 80, streams[STDOUT]) ){
+		regcomp(&reg, idstr,0);
+		if(regexec(&reg, text, 0, NULL , 0) == 0){
+			gnupg_exec_end(pid);
+			return 0; 
+		}
+	}
+	
+	gnupg_exec_end(pid);
+
+	return -1;
+}
+
+int 
+check_gnupg()
+{
+	FILE *streams[3];
+	char *args[3];
+	int pid, count, version[3];
+	
+	debug("check_gnupg: start");
+	if(options->gpg_path == NULL){
+		return -1;
+	}
+
+	args[0] = "gpg";
+	args[1] = "--version";
+	args[2] = NULL;
+	
+	pid = gnupg_exec(options->gpg_path, args, streams);
+
+	/* this might do version checking someday if needed */
+	count = fscanf(streams[STDOUT], "gpg (GnuPG) %d.%d.%d", 
+			&version[0], &version[1], &version[2]);
+	gnupg_exec_end(pid);
+
+	if(count != 3){
+		statusline_msg("WARNING! GnuPG Executable not found"); getch();
+		return -1;
+	} else {
+		debug("check_gnupg: Version %d.%d.%d", version[0], version[1], version[2]);	
+		return 0;
+	}
 }
 
 int
 gnupg_write(xmlDocPtr doc, char* id, char* filename)
 {
-	char *dump, *buf;
-	FILE *fp;
-	int i;
-	GpgmeData plain, cipher;
-	GpgmeRecipients recp;
-	GpgmeError error;
-
-	check_gnupg_id(id);
-	check_file(filename);
-
-	xmlDocDumpMemory(doc, (xmlChar**)&dump, &i);
-	gpgme_data_new_from_mem(&plain, dump, i, -1);
-	gpgme_data_new(&cipher);
-	gpgme_recipients_new(&recp);
-	gpgme_recipients_add_name(recp, id);
-	gpgme_op_encrypt(ctx, recp, plain, cipher);
+	FILE *streams[3];
+	char cmd[V_LONG_STR], buf[V_LONG_STR];
+	char *args[9];
+	char *err;
+	int pid;
 	
-	gpgme_data_read(cipher, NULL, 0, &i);
-	buf = malloc(i);
-	gpgme_data_read(cipher, buf, i, &i);
-
-	fp = fopen(filename, "w");
-	if(!fp){
-		statusline_msg("Couldn't open file for writing");
-		getch();
+	if((check_gnupg() != 0) || !filename){
 		return -1;
 	}
-	fputs(buf, fp);
-	fclose(fp);
+	if(check_gnupg_id(id) != 0){
+		get_gnupg_id(id);
+	}
 
-	gpgme_data_release(plain);
-	gpgme_data_release(cipher);
-	gpgme_recipients_release(recp);
+	debug("gnupg_write: start writing");
 
-	free(dump);
-	free(buf);
+	err = NULL;
+	args[0] = "gpg";
+	args[1] = "-e";
+	args[2] = "-a";
+	args[3] = "--yes";
+	args[4] = "-r";
+	args[5] = id;
+	args[6] = "-o";
+	args[7] = filename;
+	args[8] = NULL;
 
-	statusline_msg("File wrote sucessfully");
+	while(1){
+		/* clear err buffer */
+		if(err != NULL){ free(err); err = NULL; }
+
+		pid = gnupg_exec(options->gpg_path, args, streams);
+
+		xmlDocFormatDump(streams[STDIN], doc, TRUE);
+		close( fileno(streams[STDIN]) );
+		
+		while( fgets(buf, V_LONG_STR - 1, streams[STDERR]) != NULL ){
+			err = add_to_buf(err, buf);
+		}
+		gnupg_exec_end(pid);
+		
+		debug("gnupg_write: start error checking");
+		/*
+		 * check for errors(no key, bad pass, no file etc etc)
+		 */
+		if( str_in_buf(err, GPG_ERR_CANTWRITE) ){
+			debug("gnupg_write: cannot write to %s", filename);
+
+			snprintf(buf, V_LONG_STR, "Cannot write to %s", filename);
+			statusline_msg(buf); getch();
+
+			filename = get_filename(filename, 'w');
+			if(filename[0] == 0){
+				return -1;
+			}
+			continue;
+		}
+		break;
+	}
+
+	statusline_msg("File Write Sucessful");
+	debug("gnupg_write: file write sucessful");
+	
+	return 0;
 }
 
 int
 gnupg_read(char *filename, xmlDocPtr *doc)
 {
-	int i;
-	char *buf;
-	char text[LONG_STR];
-	GpgmeData plain, cipher;
-	GpgmeError error;
+	char *args[9], *passphrase, *data, *err, buf[V_LONG_STR], *user;
+	FILE *streams[3];
+	int pid;
 	
-	gpgme_data_new(&plain);
-	error = gpgme_data_new_from_file(&cipher, filename, -1);
-	if(error != GPGME_No_Error){
-		return error;
-	}
-
-	error = gpgme_op_decrypt(ctx, cipher, plain);
-	if(error != GPGME_No_Error){
-		return error;
-	}
-	
-	gpgme_data_read(plain, NULL, 0, &i);
-	buf = malloc(i);
-	error = gpgme_data_read(plain, buf, i, &i);
-
-	if(error == GPGME_No_Error){
-		*doc = xmlParseMemory(buf, i);
-	} else {
+	if(check_gnupg() != 0){
+		*doc = xmlNewDoc("1.0");
 		return -1;
 	}
+/*
+	if(check_gnupg_passphrase(filename) == -1){
+		return -1;
+	}*/
 
-	passphrase_good = 1;
+	data = NULL;
+	err = NULL;
+	user = NULL;
+	args[0] = "gpg";
+	args[1] = "--passphrase-fd";
+	args[2] = "0";
+	args[3] = "--no-verbose";
+	args[4] = "--batch";
+	args[5] = "--output";
+	args[6] = "-";
+	args[7] = filename;
+	args[8] = NULL;
+	
+	while(1){
+		/* clear buffers */
+		if(err != NULL){ free(err); err = NULL; }
+		if(data != NULL){ free(data); data = NULL; }
+		
+		passphrase = (char*)get_passphrase();
+		if(passphrase == NULL){
+			filename[0] = 0;
+			break;
+		}
+		pid = gnupg_exec(options->gpg_path, args, streams);
+
+		fputs( passphrase, streams[STDIN]);
+		fputc( '\n' , streams[STDIN]);
+		fclose(streams[STDIN]);
+
+		debug("gnupg_read: start reading data");
+		while( fgets(buf, V_LONG_STR - 1, streams[STDOUT]) != NULL ){
+			data = add_to_buf(data, buf);
+		}
+		while( fgets(buf, V_LONG_STR - 1, streams[STDERR]) != NULL ){
+			err = add_to_buf(err, buf);
+		}
+	
+		gnupg_exec_end(pid);
+
+		debug("gnupg_read: start error checking");
+		/*
+		 * check for errors(no key, bad pass, no file etc etc)
+		 */
+		if( str_in_buf(err, GPG_ERR_BADPASSPHRASE) ){
+			debug("gnupg_read: bad passphrase");
+			statusline_msg("Bad Passphrase, please re-enter");
+			getch();
+
+			passphrase_good = 0;
+			continue;
+		}
+		if( str_in_buf(err, GPG_ERR_CANTOPEN) ){
+			debug("gnupg_read: cannot open %s", filename);
+			snprintf(buf, V_LONG_STR, "Cannot open %s", filename);
+			statusline_msg(buf); getch();
+			break;
+		}
+		if( str_in_buf(err, GPG_ERR_NOSECRETKEY) ){
+			gnupg_find_recp(err, user);
+			debug("gnupg_read: bad user %s", user);
+			snprintf(buf, V_LONG_STR, "You do not have the secret key for %s", user);
+			statusline_msg(buf); getch();
+			break;
+		}
+		break;
+	}
+
+
+	debug("gnupg_read: finished read");
+	if(data != NULL){
+		debug("gnupg_read: data != NULL");
+		*doc = xmlParseMemory(data, strlen(data));
+		free(data);
+	} else {
+		debug("gnupg_read: data is null");
+		*doc = xmlNewDoc("1.0");
+	}
+	if(err != NULL){ free(err); }
+	if(user != NULL){ free(user); }
+
+	debug("gnupg_read: finished all");
+
 	return 0;
 }

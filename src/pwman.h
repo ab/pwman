@@ -26,6 +26,7 @@
 #include <string.h>
 #include <config.h>
 #include <time.h>
+#include <stdarg.h>
 
 #define CONF_FILE 	".pwmanrc" 
 
@@ -44,6 +45,9 @@
 
 #define DEFAULT_UMASK 066
 
+
+#define FF_VERSION 3 
+
 struct _PW {
 	int id;
 	char *name;
@@ -56,6 +60,16 @@ struct _PW {
 
 typedef struct _PW Pw;
 
+struct _PWList {
+	char *name;
+	Pw *list;
+	struct _PWList *parent;
+	struct _PWList *sublists;
+	struct _PWList *next;
+};
+
+typedef struct _PWList PWList;
+
 typedef struct {
 	int field;
 	char *filter;
@@ -63,6 +77,7 @@ typedef struct {
 
 typedef struct {
 	char *gpg_id;
+	char *gpg_path;
 	char *password_file;
 	int passphrase_timeout;
 	PwFilter *filter;
@@ -70,10 +85,12 @@ typedef struct {
 
 Options *options;
 int write_options;
-Pw *pwlist;
+PWList *pwlist;
+PWList *current_pw_sublist;
 time_t time_base;
 
 char *trim_ws(char*);
+void debug(char*, ...);
 int init_ui();
 int run_ui();
 int end_ui();
@@ -81,4 +98,5 @@ int end_ui();
 PwFilter * new_filter();
 Options * new_options();
 Pw* new_pw();
+PWList *new_pwlist(char*);
 #endif

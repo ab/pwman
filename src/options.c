@@ -29,6 +29,7 @@ new_options()
 
 	new = malloc(sizeof(Options));
 	new->gpg_id = malloc(SHORT_STR);
+	new->gpg_path = malloc(LONG_STR);
 	new->password_file = malloc(LONG_STR);
 	new->passphrase_timeout = 180;
 
@@ -45,7 +46,7 @@ get_conf_file()
 	conf_file = malloc(LONG_STR);
 	
 	if(!getenv("HOME")){
-		fprintf(stderr,"PWM-Error: Environment variable not set\n");
+		fprintf(stderr,"PWM-Error: Environment variable \"HOME\" not set\n");
 		return NULL;
 	} else {
 		snprintf(conf_file, LONG_STR, "%s/%s", getenv("HOME"), CONF_FILE);
@@ -82,10 +83,13 @@ read_config()
 
 	for(node = root->children; node != NULL; node = node->next){
 		if(!node || !node->name){
-			fprintf(stderr, "PWM-Warning: Fucked up xml node\n");
+			debug("read_config: Fucked up xml node");
 		} else if( strcmp((char*)node->name, "gpg_id") == 0){
 			text = (char*)xmlNodeGetContent(node);
 			if(text) strncpy(options->gpg_id, text, SHORT_STR);
+		} else if( strcmp((char*)node->name, "gpg_path") == 0){
+			text = (char*)xmlNodeGetContent(node);
+			if(text) strncpy(options->gpg_path, text, LONG_STR);
 		} else if( strcmp((char*)node->name, "password_file") == 0){
 			text = (char*)xmlNodeGetContent(node);
 			if(text) strncpy(options->password_file, text, LONG_STR);
@@ -97,7 +101,7 @@ read_config()
 			text = (char*)xmlNodeGetContent(node);
 			if(text) strncpy(options->filter->filter, text, SHORT_STR);
 		} else {
-			fprintf(stderr, "PWM-Warning: Unrecognised xml node\n");
+			debug("read_config: Unrecognised xml node");
 		}
 	}
 	write_options = TRUE;
@@ -129,6 +133,7 @@ write_config()
 	doc = xmlNewDoc((xmlChar*) "1.0");
 	root = xmlNewDocNode(doc, NULL, (xmlChar*)"pwm_config", NULL);
 	xmlNewChild(root, NULL, (xmlChar*)"gpg_id", (xmlChar*)options->gpg_id);
+	xmlNewChild(root, NULL, (xmlChar*)"gpg_path", (xmlChar*)options->gpg_path);
 	xmlNewChild(root, NULL, (xmlChar*)"password_file", (xmlChar*)options->password_file);
 
 	snprintf(text, SHORT_STR, "%d", options->passphrase_timeout);
@@ -140,7 +145,7 @@ write_config()
 
 	xmlDocSetRootElement(doc, root);
 
-	if( xmlSaveFile(file, doc) != -1 ){
+	if( xmlSaveFormatFile(file, doc, TRUE) != -1 ){
 		xmlFreeDoc(doc);
 		return 0;
 	} else {

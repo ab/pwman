@@ -24,11 +24,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdarg.h>
 
 static void parse_command_line(int argc, char **argv);
 static void show_usage();
 static void show_version();
 static void quit_pwman();
+
 
 static int
 check_lock_file()
@@ -63,45 +65,9 @@ delete_lock_file()
 }
 
 static void
-pwman_get_options()
-{
-	char pw_file[LONG_STR];
-	char text[SHORT_STR];
-	
-	puts("No .pwmanrc found. Manual config");
-	
-	printf("GnuPG ID [you@yourdomain.com]: ");
-	fgets(options->gpg_id, SHORT_STR, stdin);
-	if( strcmp(options->gpg_id, "\n") == 0 ){
-		strncpy(options->gpg_id, "you@yourdomain.com", SHORT_STR);
-	} else {
-		options->gpg_id[ strlen(options->gpg_id) - 1] = 0;
-	}
-	
-	snprintf(pw_file, LONG_STR, "%s/.pwman.enc", getenv("HOME") );
-	printf("Password Database File [%s]: ", pw_file );
-	fgets(options->password_file, LONG_STR, stdin);
-	if( strcmp(options->password_file, "\n") == 0){
-		strncpy(options->password_file, pw_file, LONG_STR);
-	} else {
-		options->password_file[ strlen(options->password_file) - 1] = 0;
-	}
-	
-	printf("Passphrase Timeout(in minutes) [180]: ");
-	fgets(text, SHORT_STR, stdin);
-	if( strcmp(text, "\n") == 0){
-		options->passphrase_timeout = 180;
-	} else {
-		options->passphrase_timeout = atoi(text);
-	}
-
-	write_options = TRUE;
-	write_config();
-}
-
-static void
 init_pwman(int argc, char *argv[])
 {
+	char c;
 	signal(SIGKILL, quit_pwman);
 	signal(SIGTERM, quit_pwman);
 
@@ -110,7 +76,7 @@ init_pwman(int argc, char *argv[])
 	/* get options from .pwmanrc */
 	options = new_options();
 	if(read_config() == -1){
-		pwman_get_options();
+		get_options();
 	}
 
 	/* parse command line options */
@@ -118,24 +84,32 @@ init_pwman(int argc, char *argv[])
 
 	/* check to see if another instance of pwman is open */
 	if(check_lock_file()){
-		fprintf(stderr, "It seems another %s is already opened by an instance of pwman\n",
+		fprintf(stderr, "It seems %s is already opened by an instance of pwman\n",
 				options->password_file);
-		fprintf(stderr, "Two instances of pwman cannot open the same file at the same time\n");
-		fprintf(stderr, "If you do not have another instance of pwman open delete the file %s.lock\n",
+		fprintf(stderr, "Two instances of pwman should not be open the same file at the same time\n");
+		fprintf(stderr, "If you are sure pwman is not already open you can delete the file. Delete file %s.lock? [y/n]\n",
 				options->password_file);
-		exit(-1);
+		c = getchar();
+		if(tolower(c) == 'y'){
+			delete_lock_file();
+		} else {
+			exit(-1);
+		}
 	}
 	
 	if( init_ui() ){
 		exit(1);
 	}
 
-	init_gpgme();
+/*	init_gpgme(); 		FUCK GPGME */
 	refresh_windows();
 
 	/* get pw database */
 	init_database();
-	read_file();
+	if(read_file() != 0){
+		pwlist = new_pwlist("Main");
+		current_pw_sublist = pwlist;
+	}
 	create_lock_file();
 
 	refresh_windows();
@@ -147,13 +121,12 @@ quit_pwman()
 	write_file();
 	free_database();
 	delete_lock_file();
-
+/*
 	quit_gpgme();
-	
+*/	
 	end_ui();
-
 	write_config();
-
+	
 	exit(0);
 }
 
@@ -168,21 +141,6 @@ main(int argc, char *argv[])
 	return 0;
 }
 
-char *
-trim_ws(char *str)
-{
-	int i;
-
-	for(i = (strlen(str) - 1); i >= 0; i--){
-		if(str[i] != ' '){
-			return str;
-		} else {
-			str[i] = 0;
-		}
-	}
-	statusline_msg(str);
-}
-
 static void
 parse_command_line(int argc, char **argv)
 {
@@ -195,7 +153,11 @@ parse_command_line(int argc, char **argv)
 		} else if( !strcmp(argv[i], "--version") || !strcmp(argv[i], "-v") ){
 			show_version();
 			exit(1);
-		} else if( !strcmp(argv[i], "--gpg-id") ){
+		} else if( !strcmp(argv[i], "--gpg-path") ){
+			write_options = FALSE;
+			strncpy(options->gpg_path, argv[i + 1], LONG_STR);
+			i++;
+		}else if( !strcmp(argv[i], "--gpg-id") ){
 			write_options = FALSE;
 			strncpy(options->gpg_id, argv[i + 1], SHORT_STR);
 			i++;
@@ -243,6 +205,7 @@ show_usage(char *argv_0)
 	puts("Store you passwords securely using public key encryption\n");
 	puts("  --help                 show usage");
 	puts("  --version              display version information");
+	puts("  --gpg-path [path]      Path to GnuPG executable");
 	puts("  --gpg-id [id]          GnuPG ID to use");
 	puts("  --file [file]          file to read passwords from");
 	puts("  --passphrase-timeout   time before app forgets passphrase\n\n");

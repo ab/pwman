@@ -64,23 +64,45 @@ highlight_line(int line)
         scrollok(list, TRUE);
 }
 
+PWList *
+get_highlighted_sublist()
+{
+	PWList *iter;
+	int i = -1;
+
+	if(!current_pw_sublist){ return NULL; }
+	if(current_pw_sublist->parent){ i++; }
+
+	for(iter = current_pw_sublist->sublists; iter != NULL; iter = iter->next){
+		i++;
+		if(i == curitem){
+			break;
+		}
+	}
+	return iter;
+}
+
 Pw *
-get_current_item()
+get_highlighted_item()
 {	
 	Pw *iter;
-	int i;
+	PWList *listiter;
+	int i = -1;
 
-	i = -1;
-	iter = pwlist;
-
-	while(iter != NULL){
+	if(current_pw_sublist->parent){ i++; }
+	
+	for(listiter = current_pw_sublist->sublists; listiter != NULL; listiter = listiter->next){
+		i++;
+	}
+		
+	for(iter = current_pw_sublist->list; iter != NULL; iter = iter->next){
 		if( apply_filter(iter, options->filter) ){
 			i++;
 		}
 		if( i == curitem ){
-			break;
+			debug("get_highlighted_item: found %d, break now", i);
+			return iter;
 		}
-		iter = iter->next;
 	}
 /*	fprintf(stderr, "%d.", curitem);
 	for(iter = pwlist; (iter != NULL) && i <= curitem; iter = iter->next){
@@ -88,20 +110,55 @@ get_current_item()
 			i++;	
 		}	
 	}*/
+	debug("get_highlighted_item: nothing found, return NULL");
+	return NULL;
+}
 
-	return iter;
+LIST_ITEM_TYPE
+get_highlighted_type()
+{
+	Pw *iter;
+	PWList *listiter;
+	int i = -1;
+
+	if(current_pw_sublist->parent){
+		if(curitem == 0){
+			return PW_UPLEVEL;
+		}
+		i++;
+	}
+	for(listiter = current_pw_sublist->sublists; listiter != NULL; listiter = listiter->next){
+		i++;
+		if(i == curitem){
+			return PW_SUBLIST;
+		}
+	}
+		
+	for(iter = current_pw_sublist->list; iter != NULL; iter = iter->next){
+		if( apply_filter(iter, options->filter) ){
+			i++;
+		}
+		if( i == curitem ){
+			return PW_ITEM;
+		}
+	}
+	return PW_NULL;
 }
 
 int
 refresh_list()
 {
 	Pw *iter;
+	PWList *listiter;
 	int i = 0;
 	static int first_list_item = 0;
 	int num_shown = 0;
 
 	if(list == NULL){
 		init_list();
+	}
+	if(current_pw_sublist == NULL){
+		return -1;
 	}
 
 	clear_list();;
@@ -115,10 +172,40 @@ refresh_list()
 	if(curitem < first_list_item){
 		first_list_item = curitem;		
 	} else if((curitem > LAST_LIST_ITEM)){
-		first_list_item++;
+		first_list_item = curitem - (LIST_LINES-1);
 	}
 
-	for(iter = pwlist; (iter != NULL); iter = iter->next){
+	if(current_pw_sublist->parent){
+		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
+			if(lines == curitem){
+				highlight_line(num_shown);
+			} else {
+				wattrset(list, A_BOLD);
+			}
+			mvwprintw(list, num_shown, NAMEPOS, "<Up One Level - \"%s\">", current_pw_sublist->parent->name);
+			wattrset(list, A_NORMAL);
+			wstandend(list);
+			num_shown++;
+		}
+		i++; 
+		lines++;
+	}
+	for(listiter = current_pw_sublist->sublists; listiter != NULL; listiter = listiter->next){
+		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
+			if(lines == curitem){
+				highlight_line(num_shown);
+			} else {
+				wattrset(list, A_BOLD);
+			}
+			mvwprintw(list, num_shown, NAMEPOS, "%s ->", listiter->name);
+			wattrset(list, A_NORMAL);
+			wstandend(list);
+			num_shown++;
+		}
+		i++; 
+		lines++;
+	}
+	for(iter = current_pw_sublist->list; (iter != NULL); iter = iter->next){
 		/*
 		 * if line satifies filter criteria increment i and lines
 		 */
@@ -167,6 +254,28 @@ list_headerline()
 
 	attrset(A_NORMAL);
 	hide_cursor();
+}
+
+int 
+list_page_up()
+{
+	curitem -= (LIST_LINES - 1);
+
+	if(curitem < 1){
+		curitem = 0;
+	}
+	refresh_list();
+}
+
+int
+list_page_down()
+{
+	curitem += (LIST_LINES - 1);
+
+	if(curitem >= (lines - 1)){
+		curitem = lines -1;
+	}
+	refresh_list();
 }
 
 int

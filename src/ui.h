@@ -63,6 +63,13 @@ typedef enum {
 	INT
 } TYPE;
 
+typedef enum {
+	PW_NULL,
+	PW_ITEM,
+	PW_SUBLIST,
+	PW_UPLEVEL
+} LIST_ITEM_TYPE;
+
 typedef struct {
 	char *name;
 	void *value;
@@ -80,7 +87,7 @@ int view_pw(int i);
 int statusline_yes_no(char *, int);
 int statusline_msg(char *msg);
 char * statusline_ask_str(char *, char *, int len);
-
+char * statusline_ask_passwd(char *, char *, int, int);
 #endif
 
 
