@@ -379,7 +379,11 @@ put_data(xmlDocPtr doc)
 	debug(cmd);
 	fp = popen(cmd, "w");
 
+#if XML_VERSION >= 20423
 	xmlDocFormatDump(fp, doc, TRUE);
+#else
+	xmlDocDump(fp, doc);
+#endif
 	
 	pclose(fp);
 }

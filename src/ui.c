@@ -221,11 +221,11 @@ run_ui()
 				list_page_down();
 				break;
 			case KEY_UP:
-			case 'j':
+			case 'k':
 				list_up();
 				break;
 			case KEY_DOWN:
-			case 'k':
+			case 'j':
 				list_down();
 				break;
 			case 'A':

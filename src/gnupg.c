@@ -333,7 +333,11 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 
 		pid = gnupg_exec(options->gpg_path, args, streams);
 
+#if XML_VERSION >= 20423
 		xmlDocFormatDump(streams[STDIN], doc, TRUE);
+#else
+		xmlDocDump(streams[STDIN], doc);
+#endif
 		close( fileno(streams[STDIN]) );
 		
 		while( fgets(buf, V_LONG_STR - 1, streams[STDERR]) != NULL ){
