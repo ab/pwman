@@ -50,7 +50,7 @@ create_lock_file()
 	char fn[V_LONG_STR];
 		
 	snprintf(fn, V_LONG_STR, "%s.lock", options->password_file);
-//	creat(fn, S_IRWXU);
+	creat(fn, S_IRWXU);
 }
 
 static int
