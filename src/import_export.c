@@ -27,7 +27,7 @@ int
 export_passwd(Pw *pw)
 {
 	char vers[5];
-	char id[MED_STR], file[LONG_STR];
+	char id[MED_STR], file[V_LONG_STR];
 	
 	xmlDocPtr doc;
 	xmlNodePtr root;
@@ -72,7 +72,7 @@ int
 export_passwd_list(PWList *pwlist)
 {
 	char vers[5];
-	char id[MED_STR], file[LONG_STR];
+	char id[MED_STR], file[V_LONG_STR];
 	
 	xmlDocPtr doc;
 	xmlNodePtr root;
@@ -116,7 +116,7 @@ export_passwd_list(PWList *pwlist)
 int
 import_passwd()
 {
-	char file[LONG_STR], *buf, *cmd, *s, *text;
+	char file[V_LONG_STR], *buf, *cmd, *s, *text;
 	int i = 0;
 	xmlNodePtr node, root;
 	xmlDocPtr doc;

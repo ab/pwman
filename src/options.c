@@ -30,7 +30,7 @@ new_options()
 	new = malloc(sizeof(Options));
 	new->gpg_id = malloc(SHORT_STR);
 	new->gpg_path = malloc(LONG_STR);
-	new->password_file = malloc(LONG_STR);
+	new->password_file = malloc(V_LONG_STR);
 	new->passphrase_timeout = 180;
 
 	new->filter = new_filter();
@@ -43,12 +43,12 @@ get_conf_file()
 {
 	char *conf_file;
 
-	conf_file = malloc(LONG_STR);
+	conf_file = malloc(V_LONG_STR);
 	
 	if(!getenv("HOME")){
 		return NULL;
 	} else {
-		snprintf(conf_file, LONG_STR, "%s/%s", getenv("HOME"), CONF_FILE);
+		snprintf(conf_file, V_LONG_STR, "%s/%s", getenv("HOME"), CONF_FILE);
 	}
 
 	return conf_file;
@@ -89,7 +89,7 @@ read_config()
 			if(text) strncpy(options->gpg_path, text, LONG_STR);
 		} else if( strcmp((char*)node->name, "password_file") == 0){
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(options->password_file, text, LONG_STR);
+			if(text) strncpy(options->password_file, text, V_LONG_STR);
 		} else if( strcmp((char*)node->name, "passphrase_timeout") == 0){
 			text = (char*)xmlNodeGetContent(node);
 			if(text){ options->passphrase_timeout = atoi(text); }

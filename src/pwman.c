@@ -160,7 +160,7 @@ parse_command_line(int argc, char **argv)
 			i++;
 		} else if( !strcmp(argv[i], "--file") || !strcmp(argv[i], "-f") ){
 			write_options = FALSE;
-			strncpy(options->password_file, argv[i + 1], LONG_STR);
+			strncpy(options->password_file, argv[i + 1], V_LONG_STR);
 			i++;
 		} else if( !strcmp(argv[i], "--passphrase-timeout") || !strcmp(argv[i], "-t") ){
 			write_options = FALSE;

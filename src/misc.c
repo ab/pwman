@@ -64,7 +64,7 @@ debug(char *fmt, ... )
 void
 get_options()
 {
-	char pw_file[LONG_STR];
+	char pw_file[V_LONG_STR];
 	char text[SHORT_STR];
 	
 	puts("Hmm... can't open ~/.pwmanrc, we'll create one manually now.");
@@ -85,11 +85,11 @@ get_options()
 		options->gpg_path[ strlen(options->gpg_path) - 1] = 0;
 	}
 	
-	snprintf(pw_file, LONG_STR, "%s/.pwman.db", getenv("HOME") );
+	snprintf(pw_file, V_LONG_STR, "%s/.pwman.db", getenv("HOME") );
 	printf("Password Database File [%s]: ", pw_file );
-	fgets(options->password_file, LONG_STR, stdin);
+	fgets(options->password_file, V_LONG_STR, stdin);
 	if( strcmp(options->password_file, "\n") == 0){
-		strncpy(options->password_file, pw_file, LONG_STR);
+		strncpy(options->password_file, pw_file, V_LONG_STR);
 	} else {
 		options->password_file[ strlen(options->password_file) - 1] = 0;
 	}

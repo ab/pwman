@@ -176,11 +176,11 @@ get_gnupg_id(char *id)
 char *
 expand_filename(char *filename)
 {
-	char *buf = malloc(LONG_STR);
+	char *buf = malloc(V_LONG_STR);
 	
 	if((filename[0] == '~') && getenv("HOME")){
-		snprintf(buf, LONG_STR, "%s%s\0", getenv("HOME"), filename+1);
-		strncpy(filename, buf, LONG_STR);
+		snprintf(buf, V_LONG_STR, "%s%s\0", getenv("HOME"), filename+1);
+		strncpy(filename, buf, V_LONG_STR);
 	}
 	free(buf);
 
@@ -191,9 +191,9 @@ char *
 get_filename(char *filename, char rw)
 {
 	if(rw == 'r'){
-		filename = statusline_ask_str("File to read from:", filename, LONG_STR);
+		filename = statusline_ask_str("File to read from:", filename, V_LONG_STR);
 	} else if(rw == 'w'){
-		filename = statusline_ask_str("File to write to:", filename, LONG_STR);
+		filename = statusline_ask_str("File to write to:", filename, V_LONG_STR);
 	} else {
 		return;
 	}
