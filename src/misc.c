@@ -25,8 +25,8 @@ debug(char *fmt, ... )
 {
 #ifdef DEBUG
 	va_list ap;
-	int d;
-	char *s, c;
+	int d, c;
+	char *s;
 
 	fputs("PWMan Debug% ", stderr);
 	
@@ -43,7 +43,7 @@ debug(char *fmt, ... )
 					fprintf(stderr, "%d", d);
 					break;
 				case 'c':	/* char */
-					c = va_arg(ap, char);
+					c = va_arg(ap, int);
 					fputc(c, stderr);
 					break;
 				default:
@@ -56,7 +56,7 @@ debug(char *fmt, ... )
 		}
 		*fmt++;
 	}
-	va_end(end);
+	va_end(ap);
 	fputc('\n', stderr);
 #endif
 }
