@@ -134,28 +134,31 @@ init_pwman(int argc, char *argv[])
 		exit(-1);
 	}
 	
+	if( init_ui() ){
+		exit(1);
+	}
+
+	init_gpgme();
+
 	/* get pw database */
 	init_database();
 	read_file();
 	create_lock_file();
 
-	if( init_ui() ){
-		exit(1);
-	}
-	
 	refresh_windows();
 }
 
 static void
 quit_pwman()
 {
-
-	end_ui();
-
 	write_file();
 	free_database();
 	delete_lock_file();
+
+	quit_gpgme();
 	
+	end_ui();
+
 	write_config();
 
 	exit(0);

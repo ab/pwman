@@ -191,6 +191,7 @@ run_ui()
 
 		if((last_read < (time(NULL) - (options->passphrase_timeout*60)))
 				&& options->passphrase_timeout != 0 && tolower(ch) != 'q'){
+			write_file();
 			free_database();
 			def_prog_mode();
 			end_ui();
@@ -246,15 +247,15 @@ run_ui()
 				edit_options();
 				break;
 			case 0x17:
-				def_prog_mode();
+/*				def_prog_mode();
 				end_ui();
-				
+*/				
 				write_file();
-				puts("Press any key to continue");
+/*				puts("Press any key to continue");
 				getch();
 
 				init_ui();
-				reset_prog_mode();
+				reset_prog_mode();*/
 				break;
 			case 0x12:
 				free_database();
@@ -273,6 +274,12 @@ run_ui()
 				break;
 			case '/':
 				get_filter();
+				break;
+			case 'E':
+				export_passwd(curitem);
+				break;
+			case 'I':
+				import_passwd();
 				break;
 			case 'l':
 				i = launch(curitem);
@@ -380,6 +387,47 @@ statusline_ask_str(char *msg, char *input, int len)
 	noecho();
 	hide_cursor();
 
+	statusline_clear();
+	
+	return input;
+}
+
+char *
+statusline_ask_passwd(char *msg, char *input, int len)
+{
+	int i = 0;
+	int c;
+	int x = strlen(msg) + 5;
+
+	if(input == NULL){
+		input = malloc(len);
+	}
+	statusline_clear();
+	statusline_msg(msg);
+
+	show_cursor();
+	noecho();
+
+	while(i < len){
+		c = wgetch(bottom);
+		if(c == 0x7f){
+			if(i){
+				i--;
+				mvwaddch(bottom, 1, x+i, ' ');
+				wmove(bottom, 1, x+i);
+			}
+		} else if(c == 0xd){
+			input[i] = 0;
+			break;
+		} else {
+			input[i] = c;
+			mvwaddch(bottom, 1, x + i, '*');
+			i++;
+		}
+	}
+	
+	hide_cursor();
+	
 	statusline_clear();
 	
 	return input;

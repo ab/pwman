@@ -128,6 +128,8 @@ clear_list()
 int
 list_headerline()
 {
+	int i;
+
 	show_cursor();
 	attrset(A_BOLD);
 

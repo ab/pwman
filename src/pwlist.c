@@ -27,6 +27,7 @@
 int pwindex = 0;
 extern int errno;
 void free_pw(Pw*);
+xmlDocPtr gnupg_read(char*);
 
 int
 init_database()
@@ -153,71 +154,17 @@ delete_pw(Pw *pw)
 	}
 }
 
-static char*
-store_in_buffer(char *buf, char *s)
+int 
+write_password_node(xmlNodePtr root, Pw* pw)
 {
-	size_t size;
+	xmlNodePtr node;
 
-	size = strlen(buf) + strlen(s) + 1;
-	buf = (char*)realloc(buf, size);
-
-	strncat(buf, s, size);
-	return buf;
-}
-
-static void
-check_gnupg_id()
-{
-	char cmd[V_LONG_STR];
-	int i;
-	
-	while(1){
-		if( strlen(options->gpg_id) > 6 ){
-			snprintf(cmd, V_LONG_STR, "%s --list-keys %s > /dev/null", options->gpg_path, options->gpg_id);
-		}
-		if( (execute(cmd) == 512) ){
-			fprintf(stderr, "Public Key not found: \"%s\"\n", options->gpg_id);
-			fprintf(stderr, "Please enter a new one:\t");
-			fgets(options->gpg_id, SHORT_STR, stdin);
-			options->gpg_id[ (strlen(options->gpg_id) - 1) ] = 0;
-		} else {
-			break;
-		}
-	}
-}
-
-static void
-check_file()
-{
-	FILE *fp;
-
-	while(1){
-		fp = fopen(options->password_file, "w");
-		if(fp == NULL){
-			fprintf(stderr, "Cannot open password file \"%s\"\n", options->password_file);
-			fprintf(stderr, "Please enter a new one:\t");
-			fgets(options->password_file, LONG_STR, stdin);
-			options->password_file[ strlen(options->password_file) - 1] = 0;
-		} else {
-			fclose(fp);
-			break;
-		}
-	}
-}
-
-static void
-check_gnupg()
-{
-	while(1){
-		if(access(options->gpg_path, F_OK) != 0){
-			fprintf(stderr, "GnuPG not found at \"%s\"\n", options->gpg_path);
-			fprintf(stderr, "Please enter new path:\t");
-			fgets(options->gpg_path, LONG_STR, stdin);
-			options->gpg_path[ strlen(options->gpg_path) - 1] = 0;
-		} else {
-			break;
-		}
-	}
+	node = xmlNewChild(root, NULL, (xmlChar*)"PW_Item", NULL);
+	xmlNewChild(node, NULL, (xmlChar*)"name", (xmlChar*)pw->name);
+	xmlNewChild(node, NULL, (xmlChar*)"host", (xmlChar*)pw->host);
+	xmlNewChild(node, NULL, (xmlChar*)"user", (xmlChar*)pw->user);
+	xmlNewChild(node, NULL, (xmlChar*)"passwd", (xmlChar*)pw->passwd);
+	xmlNewChild(node, NULL, (xmlChar*)"launch", (xmlChar*)pw->launch);
 }
 
 int
@@ -229,53 +176,33 @@ write_file()
 	xmlNodePtr node, root;
 	FILE *fp;
 
-	check_gnupg_id();
-	check_gnupg();
-	check_file();
-
 	if(!options->password_file){
-		fprintf(stderr,"PWM-error: password file not set\n");
+		statusline_msg("Password file not set\n");
+		getch();
 		return -1;
 	}
 	if(!pwlist){
-		fprintf(stderr,"PWM-error: bad password list\n");
+		statusline_msg("Bad password list\n");
+		getch();
 		return -1;
 	}
 	doc = xmlNewDoc((xmlChar*)"1.0");
 	
 	root = xmlNewDocNode(doc, NULL, (xmlChar*)"PWMan_List", NULL);
 	for(iter = pwlist; iter != NULL; iter = iter->next){
-		node = xmlNewChild(root, NULL, (xmlChar*)"PW_Item", NULL);
-		xmlNewChild(node, NULL, (xmlChar*)"name", (xmlChar*)iter->name);
-		xmlNewChild(node, NULL, (xmlChar*)"host", (xmlChar*)iter->host);
-		xmlNewChild(node, NULL, (xmlChar*)"user", (xmlChar*)iter->user);
-		xmlNewChild(node, NULL, (xmlChar*)"passwd", (xmlChar*)iter->passwd);
-		xmlNewChild(node, NULL, (xmlChar*)"launch", (xmlChar*)iter->launch);
+		write_password_node(root, iter);
 	}
 
 	xmlDocSetRootElement(doc, root);
 
-	cmd = malloc(V_LONG_STR);
-	snprintf(cmd, V_LONG_STR, "%s -e -a -r %s > %s", options->gpg_path, options->gpg_id, options->password_file);
-	fp = popen(cmd, "w");
-	free(cmd);
-
-	if(!fp){
-		fprintf(stderr,"PWM-Error: Couldn't execute encryption software\n");
-		xmlFreeDoc(doc);
-		pclose(fp);
-		return 0;
-	}
-	/*xmlSaveFile(options->password_file, doc);*/
+	gnupg_write(doc, options->gpg_id, options->password_file);
 	
-	xmlDocDump(fp, doc);
 	xmlFreeDoc(doc);
-	pclose(fp);
 	return 0;
 }
 
-static void
-read_pw_node(xmlNodePtr parent)
+void
+read_password_node(xmlNodePtr parent)
 {
 	Pw* new;
 	xmlNodePtr node;
@@ -285,7 +212,8 @@ read_pw_node(xmlNodePtr parent)
 
 	for(node = parent->children; node != NULL; node = node->next){
 		if(!node || !node->name){
-			fprintf(stderr,"PWM-Warning: Fucked up xml node\n");
+			statusline_msg("Messed up xml node\n");
+			getch();
 		} else if( strcmp((char*)node->name, "name") == 0){
 			text = (char*)xmlNodeGetContent(node);
 			if(text) strncpy(new->name, text, NAME_LEN);
@@ -301,9 +229,7 @@ read_pw_node(xmlNodePtr parent)
 		} else if( strcmp((char*)node->name, "launch") == 0){
 			text = (char*)xmlNodeGetContent(node);
 			if(text) strncpy(new->launch, text, LAUNCH_LEN);
-		} else {
-			fprintf(stderr,"PWM-Warning: Unrecognised Node, %s\n", node->name);
-		}
+		} 
 	}
 	add_pw_ptr(new);
 }
@@ -315,41 +241,24 @@ read_file()
 	FILE *fp;
 	xmlNodePtr node, root;
 	xmlDocPtr doc;
-
-	check_gnupg();
-
-	buf = malloc(1); buf[0] = 0;
-	s = malloc(V_LONG_STR);
-	cmd = malloc(V_LONG_STR);
-	snprintf(cmd, V_LONG_STR, "%s -d %s", options->gpg_path, options->password_file);
-	fp = popen(cmd, "r");
-	while( fgets(s, V_LONG_STR, fp) ){
-		buf = store_in_buffer(buf, s);
-	}
-	pclose(fp);
-
-	free(s);
-	free(cmd);
-	cmd = s = NULL;
-
-	doc = xmlParseMemory(buf, strlen(buf));
+	doc = gnupg_read(options->password_file);
 	/*doc = xmlParseFile(options->password_file);*/
 	if(!doc){
-		fprintf(stderr,"PWM-Error: Bad password data\n");
+		statusline_msg("Bad password data in file\n");
+		getch();
 		return -1;
 	}
 	root = xmlDocGetRootElement(doc);
 	if(!root || !root->name	|| (strcmp((char*)root->name, "PWMan_List") != 0) ){
-		fprintf(stderr,"PWM-Error: Badly Formed password data\n");
+		statusline_msg("Badly Formed password data\n");
+		getch();
 		return -1;
 	}
 	for(node = root->children; node != NULL; node = node->next){
 		if(!node || !node->name){
-			fprintf(stderr,"PWM-Warning: Fucked up xml node\n");
+			statusline_msg("Messed up xml node\n");
 		} else if( strcmp((char*)node->name, "PW_Item") == 0){
-			read_pw_node(node);
-		} else {
-			fprintf(stderr,"PWM-Warning: Unrecognised xml node\n");
+			read_password_node(node);
 		}
 	}
 	xmlFreeDoc(doc);

@@ -17,7 +17,7 @@ dnl ncurses detection
 dnl -------------------
 
 curses_loc=/usr
-AC_ARG_WITH(curses, [ --with-ncurses=PATH	Where ncurses is installed ],
+AC_ARG_WITH(curses, [  --with-ncurses=PATH	Where ncurses is installed ],
         [if test $withval != yes; then
                 curses_loc=$withval
         fi
@@ -70,6 +70,39 @@ fi
 LIBS="$LIBS $XML_LIBS";
 CFLAGS="$CFLAGS $XML_CFLAGS";
 
+dnl 
+dnl Check for GPGme
+dnl
+AC_ARG_WITH(gpgme-prefix,
+     [  --with-gpgme-prefix=PFX   Prefix where gpgme is installed],
+         gpgme_config_prefix="$withval", gpgme_config_prefix="")
+
+	 
+if test x$gpgme_config_prefix != x ; then
+	gpgme_config_args="$gpgme_config_args --prefix=$gpgme_config_prefix"
+	if test x${GPGME_CONFIG+set} != xset ; then
+		GPGME_CONFIG=$gpgme_config_prefix/bin/gpgme-config
+	fi
+fi    
+
+AC_PATH_PROG(GPGME_CONFIG, gpgme-config, no)
+
+if test "$GPGME_CONFIG" = "no" ; then 
+	echo "*************************************************************"
+	echo "  gpgme not found. "
+	echo "  It may not be installed or may be in a installed in a "
+	echo "  location other than /usr"
+	echo "  Set path to gpgme install with --with-gpgme"
+	echo "*************************************************************"
+	exit
+
+else
+	GPGME_CFLAGS=`$GPGME_CONFIG $gpgme_config_args --cflags`
+	GPGME_LIBS=`$GPGME_CONFIG $gpgme_config_args --libs` 
+fi
+
+LIBS="$LIBS $GPGME_LIBS";
+CFLAGS="$CFLAGS $GPGME_CFLAGS";
 
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
