@@ -38,15 +38,15 @@ new_filter()
 
 /*
  * String checking only case insensitive using gnu glibc
- *
+ */
 static char*
-strcasestr(char *haystack, char *needle){
+pwstrcasestr(char *haystack, char *needle){
 #ifdef HAVE_STRCASESTR
 	return strcasestr(haystack, needle);
 #else
 	return strstr(haystack, needle);
 #endif
-}*/
+}
 
 int
 apply_filter(Pw *pw, PwFilter* fil)
@@ -57,22 +57,22 @@ apply_filter(Pw *pw, PwFilter* fil)
 	}
 	switch(fil->field){
 		case 0:
-			if( strcasestr(pw->name, fil->filter) ){
+			if( pwstrcasestr(pw->name, fil->filter) ){
 				return 1;
 			}					
 			break;
 		case 1:
-			if( strcasestr(pw->host, fil->filter) ){
+			if( pwstrcasestr(pw->host, fil->filter) ){
 				return 1;
 			}
 			break;
 		case 2:
-			if( strcasestr(pw->user, fil->filter) ){
+			if( pwstrcasestr(pw->user, fil->filter) ){
 				return 1;
 			}
 			break;
 		case 3:
-			if( strcasestr(pw->launch, fil->filter) ){
+			if( pwstrcasestr(pw->launch, fil->filter) ){
 				return 1;
 			}
 			break;
