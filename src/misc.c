@@ -67,7 +67,7 @@ get_options()
 	char pw_file[LONG_STR];
 	char text[SHORT_STR];
 	
-	puts("No .pwmanrc found. Creating...");
+	puts("Hmm... can't open ~/.pwmanrc, we'll create one manually now.");
 	
 	printf("GnuPG ID [you@yourdomain.com]: ");
 	fgets(options->gpg_id, SHORT_STR, stdin);
@@ -85,7 +85,7 @@ get_options()
 		options->gpg_path[ strlen(options->gpg_path) - 1] = 0;
 	}
 	
-	snprintf(pw_file, LONG_STR, "%s/.pwman.enc", getenv("HOME") );
+	snprintf(pw_file, LONG_STR, "%s/.pwman.db", getenv("HOME") );
 	printf("Password Database File [%s]: ", pw_file );
 	fgets(options->password_file, LONG_STR, stdin);
 	if( strcmp(options->password_file, "\n") == 0){

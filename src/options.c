@@ -46,7 +46,6 @@ get_conf_file()
 	conf_file = malloc(LONG_STR);
 	
 	if(!getenv("HOME")){
-		fprintf(stderr,"PWM-Error: Environment variable \"HOME\" not set\n");
 		return NULL;
 	} else {
 		snprintf(conf_file, LONG_STR, "%s/%s", getenv("HOME"), CONF_FILE);
@@ -64,20 +63,18 @@ read_config()
 	
 	file = get_conf_file();
 	if(file == NULL){
-		fprintf(stderr,"PWM-Error: Couldn't get config filename\n");
 		return -1;
 	}
 
 	doc = xmlParseFile(file);
 	if(!doc){
-		fprintf(stderr,"PWM-Error: Couldn't Parse File %s\n", file);
 		return -1;
 	}
 
 	root = xmlDocGetRootElement(doc);
 
 	if(!root || !root->name || (strcmp((char*)root->name, "pwm_config") != 0) ){
-		fprintf(stderr,"PWM-Error: Badly Formed File\n");
+		fprintf(stderr,"PWM-Warning: Badly Formed .pwmanrc\n");
 		return -1;
 	}
 
@@ -118,16 +115,14 @@ write_config()
 	xmlNodePtr node, root;
 
 	if(!write_options){
-		return;
+		return 0;
 	}
 	file = get_conf_file();
 	if(file == NULL){
-		fprintf(stderr, "PWM-Error: Couldn't get config filename\n");
 		return -1;
 	}
 
 	if(!options){
-		fprintf(stderr, "PWM-Error: Options not initialized\n");
 		return -1;
 	}
 	doc = xmlNewDoc((xmlChar*) "1.0");
@@ -149,7 +144,7 @@ write_config()
 		xmlFreeDoc(doc);
 		return 0;
 	} else {
-		fprintf(stderr, "PWM-Error: Couldn't save config file\n");
+		debug("write_options: couldn't write config file");
 		xmlFreeDoc(doc);
 		return -1;
 	}

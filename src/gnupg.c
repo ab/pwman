@@ -160,7 +160,7 @@ void
 get_gnupg_id(char *id)
 {
 	while(1){
-		id = statusline_ask_str("Recipient:", id, MED_STR);
+		id = statusline_ask_str("GnuPG Recipient ID:", id, MED_STR);
 		if(id[0] == 0){
 			return;
 		}
@@ -173,29 +173,30 @@ get_gnupg_id(char *id)
 }
 
 char *
+expand_filename(char *filename)
+{
+	char *buf = malloc(LONG_STR);
+	
+	if((filename[0] == '~') && getenv("HOME")){
+		snprintf(buf, LONG_STR, "%s%s\0", getenv("HOME"), filename+1);
+		strncpy(filename, buf, LONG_STR);
+	}
+	free(buf);
+
+	return filename;
+}
+
+char *
 get_filename(char *filename, char rw)
 {
-	char *buf = NULL;
-
 	if(rw == 'r'){
-		buf = statusline_ask_str("File to read from:", buf, LONG_STR);
+		filename = statusline_ask_str("File to read from:", filename, LONG_STR);
 	} else if(rw == 'w'){
-		buf = statusline_ask_str("File to write to:", buf, LONG_STR);
+		filename = statusline_ask_str("File to write to:", filename, LONG_STR);
 	} else {
 		return;
 	}
-
-	if(buf[0] == '~' && getenv("HOME")){
-		snprintf(filename, LONG_STR, "%s%s\0", getenv("HOME"), buf+1);
-		debug("get_filename: expanded filename %s", filename);
-	}  else {
-		strncpy(filename, buf, LONG_STR);
-	}
-	if(buf != NULL){
-		free(buf);
-	}
 }
-
 
 const char *
 get_passphrase()
@@ -323,7 +324,7 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 	args[5] = "-r";
 	args[6] = id;
 	args[7] = "-o";
-	args[8] = filename;
+	args[8] = expand_filename( filename );
 	args[9] = NULL;
 
 	while(1){
@@ -359,7 +360,7 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 		break;
 	}
 
-	statusline_msg("File Write Sucessful");
+	statusline_msg("List Saved");
 	debug("gnupg_write: file write sucessful");
 	
 	return 0;
@@ -391,7 +392,7 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 	args[4] = "--batch";
 	args[5] = "--output";
 	args[6] = "-";
-	args[7] = filename;
+	args[7] = expand_filename( filename );
 	args[8] = NULL;
 	
 	while(1){
@@ -434,7 +435,7 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 		}
 		if( str_in_buf(err, GPG_ERR_CANTOPEN) ){
 			debug("gnupg_read: cannot open %s", filename);
-			snprintf(buf, V_LONG_STR, "Cannot open %s", filename);
+			snprintf(buf, V_LONG_STR, "Cannot open file \"%s\"", filename);
 			statusline_msg(buf); getch();
 			break;
 		}

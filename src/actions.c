@@ -527,3 +527,15 @@ list_launch()
 			break;
 	}
 }
+
+int
+list_read_file()
+{
+	free_database();
+	if(read_file() != 0){
+		pwlist = new_pwlist("Main");
+		current_pw_sublist = pwlist;
+	}
+	refresh_list();
+	return -1;
+}

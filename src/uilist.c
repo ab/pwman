@@ -154,6 +154,7 @@ refresh_list()
 	static int first_list_item = 0;
 	int num_shown = 0;
 
+	debug("refresh_list: refreshing list");
 	if(list == NULL){
 		init_list();
 	}
@@ -227,6 +228,8 @@ refresh_list()
 	}
 	wrefresh(list);
 	hide_cursor();
+
+	debug("refresh_list: done refreshing list");
 }
 
 int

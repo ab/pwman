@@ -240,7 +240,7 @@ run_ui()
 				break;
 			case 'e':
 			case ' ':
-			case 13:
+			case 13: /* return/enter key */
 				list_select_item();
 				/*current_item = get_current_item();
 				if(current_item){
@@ -248,7 +248,7 @@ run_ui()
 				}*/
 				break;
 			case 'd':
-			case 0x14A:
+			case 0x14A: /* DEL key */
 				list_delete_item();
 				break;
 			case 'm':
@@ -266,21 +266,19 @@ run_ui()
 			case 'o':
 				edit_options();
 				break;
-			case 0x17:
+			case 0x17: /* control-w */
 				write_file();
 				break;
-			case 0x12:
-				free_database();
-				read_file();
-				refresh_list();
+			case 0x12: /* control-r */
+				list_read_file();
 				break;
-			case 0x07:
+			case 0x07: /* control-g */
 				pwgen_indep();
 				break;
-			case 0x06:
+			case 0x06: /* control-f */
 				forget_passphrase();
 				break;
-			case 0x0C:
+			case 0x0C: /* control-l */
 				refresh_windows();
 				break;
 			case '/':

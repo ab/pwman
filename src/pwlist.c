@@ -425,7 +425,7 @@ read_file()
 		statusline_msg("Password File in older format, use convert_pwdb");
 		return -1;
 	}
-	
+
 	for(node = root->children; node != NULL; node = node->next){
 		if(strcmp(node->name, "PwList") == 0){
 			read_pwlist(node, NULL);
