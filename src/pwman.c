@@ -67,6 +67,7 @@ pwman_get_options()
 		options->passphrase_timeout = atoi(text);
 	}
 
+	write_options = TRUE;
 	write_config();
 }
 
