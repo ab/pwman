@@ -198,7 +198,7 @@ show_version()
 static void
 show_usage(char *argv_0)
 {
-	printf("Usage: %s [OPTION]...\n", argv_0);
+	printf("Usage: %s [OPTIONS]...\n", argv_0);
 	puts("Store you passwords securely using public key encryption\n");
 	puts("  --help                 show usage");
 	puts("  --version              display version information");
