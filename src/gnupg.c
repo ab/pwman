@@ -301,8 +301,10 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 	char *args[10];
 	char *err;
 	int pid;
-	
+
+	debug("gnupg_write: do some checks");	
 	if((check_gnupg() != 0) || !filename || (filename[0] == 0)){
+		debug("gnupg_write: no gnupg or filename not set");
 		return -1;
 	}
 	if(check_gnupg_id(id) != 0){
