@@ -2,7 +2,7 @@
 # Generated automatically by configure.
 # Run this file to recreate the current configuration.
 # This directory was configured as follows,
-# on host fandango:
+# on host homer:
 #
 # ./configure 
 #
@@ -36,13 +36,13 @@ sed 's/%@/@@/; s/@%/@@/; s/%g$/@g/; /@g$/s/[\\&%]/\\&/g;
 /^[ 	]*VPATH[ 	]*=[^:]*$/d
 
 s%@SHELL@%/bin/sh%g
-s%@CFLAGS@%-g -O2 -I/usr/include/libxml2/libxml -I/usr/include/libxml2%g
+s%@CFLAGS@%-g -O2 -I/usr/local/include/libxml -I/usr/local/include%g
 s%@CPPFLAGS@%%g
 s%@CXXFLAGS@%%g
 s%@FFLAGS@%%g
 s%@DEFS@%-DHAVE_CONFIG_H%g
 s%@LDFLAGS@%%g
-s%@LIBS@% -lncurses -lxml2%g
+s%@LIBS@% -lcurses -L/usr/local/lib -lxml2 -lz -lm%g
 s%@exec_prefix@%${prefix}%g
 s%@prefix@%/usr/local%g
 s%@program_transform_name@%s,x,x,%g
@@ -71,9 +71,9 @@ s%@MAKEINFO@%makeinfo%g
 s%@SET_MAKE@%%g
 s%@CC@%gcc%g
 s%@CPP@%gcc -E%g
-s%@XML2_CONFIG@%/usr/bin/xml2-config%g
-s%@XML_CFLAGS@%-I/usr/include/libxml2/libxml -I/usr/include/libxml2%g
-s%@XML_LIBS@%-lxml2%g
+s%@XML2_CONFIG@%/usr/local/bin/xml2-config%g
+s%@XML_CFLAGS@%-I/usr/local/include/libxml -I/usr/local/include%g
+s%@XML_LIBS@%-L/usr/local/lib -lxml2 -lz -lm%g
 
 CEOF
 
@@ -224,24 +224,21 @@ CEOF
 ${ac_dA}HAVE_TERMIOS_H${ac_dB}HAVE_TERMIOS_H${ac_dC}1${ac_dD}
 ${ac_uA}HAVE_TERMIOS_H${ac_uB}HAVE_TERMIOS_H${ac_uC}1${ac_uD}
 ${ac_eA}HAVE_TERMIOS_H${ac_eB}HAVE_TERMIOS_H${ac_eC}1${ac_eD}
-${ac_dA}HAVE_LINUX_TERMIOS_H${ac_dB}HAVE_LINUX_TERMIOS_H${ac_dC}1${ac_dD}
-${ac_uA}HAVE_LINUX_TERMIOS_H${ac_uB}HAVE_LINUX_TERMIOS_H${ac_uC}1${ac_uD}
-${ac_eA}HAVE_LINUX_TERMIOS_H${ac_eB}HAVE_LINUX_TERMIOS_H${ac_eC}1${ac_eD}
 ${ac_dA}HAVE_SYS_IOCTL_H${ac_dB}HAVE_SYS_IOCTL_H${ac_dC}1${ac_dD}
 ${ac_uA}HAVE_SYS_IOCTL_H${ac_uB}HAVE_SYS_IOCTL_H${ac_uC}1${ac_uD}
 ${ac_eA}HAVE_SYS_IOCTL_H${ac_eB}HAVE_SYS_IOCTL_H${ac_eC}1${ac_eD}
 ${ac_dA}HAVE_NCURSES_H${ac_dB}HAVE_NCURSES_H${ac_dC}1${ac_dD}
 ${ac_uA}HAVE_NCURSES_H${ac_uB}HAVE_NCURSES_H${ac_uC}1${ac_uD}
 ${ac_eA}HAVE_NCURSES_H${ac_eB}HAVE_NCURSES_H${ac_eC}1${ac_eD}
+${ac_dA}STDC_HEADERS${ac_dB}STDC_HEADERS${ac_dC}1${ac_dD}
+${ac_uA}STDC_HEADERS${ac_uB}STDC_HEADERS${ac_uC}1${ac_uD}
+${ac_eA}STDC_HEADERS${ac_eB}STDC_HEADERS${ac_eC}1${ac_eD}
 CEOF
   sed -f conftest.frag conftest.in > conftest.out
   rm -f conftest.in
   mv conftest.out conftest.in
 
   cat > conftest.frag <<CEOF
-${ac_dA}STDC_HEADERS${ac_dB}STDC_HEADERS${ac_dC}1${ac_dD}
-${ac_uA}STDC_HEADERS${ac_uB}STDC_HEADERS${ac_uC}1${ac_uD}
-${ac_eA}STDC_HEADERS${ac_eB}STDC_HEADERS${ac_eC}1${ac_eD}
 ${ac_dA}HAVE_STRING_H${ac_dB}HAVE_STRING_H${ac_dC}1${ac_dD}
 ${ac_uA}HAVE_STRING_H${ac_uB}HAVE_STRING_H${ac_uC}1${ac_uD}
 ${ac_eA}HAVE_STRING_H${ac_eB}HAVE_STRING_H${ac_eC}1${ac_eD}

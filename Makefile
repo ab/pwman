@@ -1,5 +1,5 @@
 # Generated automatically from Makefile.in by configure.
-# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -58,16 +58,16 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = gcc
-CFLAGS = -g -O2 -I/usr/include/libxml2/libxml -I/usr/include/libxml2
+CFLAGS = -g -O2 -I/usr/local/include/libxml -I/usr/local/include
 CPPFLAGS = 
 LDFLAGS = 
 MAKEINFO = makeinfo
 PACKAGE = pwman
 VERSION = 0.1.2
-XML2_CONFIG = /usr/bin/xml2-config
-XML_CFLAGS = -I/usr/include/libxml2/libxml -I/usr/include/libxml2
+XML2_CONFIG = /usr/local/bin/xml2-config
+XML_CFLAGS = -I/usr/local/include/libxml -I/usr/local/include
 XML_CONFIG = @XML_CONFIG@
-XML_LIBS = -lxml2
+XML_LIBS = -L/usr/local/lib -lxml2 -lz -lm
 
 SUBDIRS = src doc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -95,7 +95,7 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 $(ACLOCAL_M4):  configure.in 
 	cd $(srcdir) && $(ACLOCAL)
 
-config.status: $(srcdir)/configure.in $(CONFIG_STATUS_DEPENDENCIES)
+config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
@@ -165,6 +165,7 @@ maintainer-clean-recursive:
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
 	  test "$$subdir" = "." && dot_seen=yes; \
+	  true; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \

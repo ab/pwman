@@ -1,5 +1,5 @@
 /* config.h.  Generated automatically by configure.  */
-/* config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define to `unsigned' if <sys/types.h> doesn't define.  */
 /* #undef size_t */
@@ -8,7 +8,7 @@
 #define STDC_HEADERS 1
 
 /* Define if you have the <linux/termios.h> header file.  */
-#define HAVE_LINUX_TERMIOS_H 1
+/* #undef HAVE_LINUX_TERMIOS_H */
 
 /* Define if you have the <locale.h> header file.  */
 #define HAVE_LOCALE_H 1
@@ -32,5 +32,5 @@
 #define PACKAGE "pwman"
 
 /* Version number of package */
-#define VERSION "0.1.1"
+#define VERSION "0.1.2"
 
