@@ -9,6 +9,7 @@ AC_ISC_POSIX
 
 AC_CHECK_HEADERS(unistd.h locale.h termios.h linux/termios.h sys/ioctl.h string.h)
 
+AC_CHECK_FUNCS(drand48)
 AC_DEFINE(_GNU_SOURCE, 1,
   [Define unconditionally for setting a GNU environment.])
 # Checks for libraries.
@@ -101,7 +102,7 @@ else
 	GPGME_LIBS=`$GPGME_CONFIG $gpgme_config_args --libs` 
 fi
 
-LIBS="$LIBS $GPGME_LIBS";
+LIBS="$LIBS $GPGME_LIBS -ggdb";
 CFLAGS="$CFLAGS $GPGME_CFLAGS";
 
 AC_SUBST(CFLAGS)

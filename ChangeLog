@@ -1,5 +1,11 @@
-0.1.3
+0.2.0
 2002-4-13 - Added search/filtering function
+2002-4-13 - Switched from using gpg to gpgme
+2002-4-14 - Added password generator
+2002-4-14 - Rewrote most of password file I/O
+2002-4-14 - Added Import/Export functions
+2002-4-14 - Got rid of incessant blinking/flashing on scroll
+2002-4-14 - Shadowed passphrase and timeout improvements
 
 0.1.2
 2002-4-5  - Switched from libxml to libxml2

@@ -50,7 +50,7 @@ create_lock_file()
 	char fn[V_LONG_STR];
 		
 	snprintf(fn, V_LONG_STR, "%s.lock", options->password_file);
-	creat(fn, S_IRWXU);
+//	creat(fn, S_IRWXU);
 }
 
 static int
@@ -69,14 +69,6 @@ pwman_get_options()
 	char text[SHORT_STR];
 	
 	puts("No .pwmanrc found. Manual config");
-	
-	printf("Path to GnuPG [/usr/bin/gpg]: ");
-	fgets(options->gpg_path, LONG_STR, stdin);
-	if( strcmp(options->gpg_path, "\n") == 0 ){
-		strncpy(options->gpg_path, "/usr/bin/gpg", LONG_STR);
-	} else {
-		options->gpg_path[ strlen(options->gpg_path) - 1] = 0;
-	}
 	
 	printf("GnuPG ID [you@yourdomain.com]: ");
 	fgets(options->gpg_id, SHORT_STR, stdin);
@@ -139,6 +131,7 @@ init_pwman(int argc, char *argv[])
 	}
 
 	init_gpgme();
+	refresh_windows();
 
 	/* get pw database */
 	init_database();
@@ -202,10 +195,6 @@ parse_command_line(int argc, char **argv)
 		} else if( !strcmp(argv[i], "--version") || !strcmp(argv[i], "-v") ){
 			show_version();
 			exit(1);
-		} else if( !strcmp(argv[i], "--gpg-path") ){
-			write_options = FALSE;
-			strncpy(options->gpg_path, argv[i + 1], LONG_STR);
-			i++;
 		} else if( !strcmp(argv[i], "--gpg-id") ){
 			write_options = FALSE;
 			strncpy(options->gpg_id, argv[i + 1], SHORT_STR);
@@ -254,7 +243,6 @@ show_usage(char *argv_0)
 	puts("Store you passwords securely using public key encryption\n");
 	puts("  --help                 show usage");
 	puts("  --version              display version information");
-	puts("  --gpg-path [path]      path to GnuPG executable");
 	puts("  --gpg-id [id]          GnuPG ID to use");
 	puts("  --file [file]          file to read passwords from");
 	puts("  --passphrase-timeout   time before app forgets passphrase\n\n");

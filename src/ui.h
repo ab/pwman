@@ -68,6 +68,7 @@ typedef struct {
 	void *value;
 	int max_length;
 	TYPE type;
+	char *(*autogen)(char*);
 } InputField;
 
 int init_list();

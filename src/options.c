@@ -28,7 +28,6 @@ new_options()
 	Options *new;
 
 	new = malloc(sizeof(Options));
-	new->gpg_path = malloc(LONG_STR);
 	new->gpg_id = malloc(SHORT_STR);
 	new->password_file = malloc(LONG_STR);
 	new->passphrase_timeout = 180;
@@ -84,9 +83,6 @@ read_config()
 	for(node = root->children; node != NULL; node = node->next){
 		if(!node || !node->name){
 			fprintf(stderr, "PWM-Warning: Fucked up xml node\n");
-		} else if( strcmp((char*)node->name, "gpg_path") == 0){
-			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(options->gpg_path, text, LONG_STR);
 		} else if( strcmp((char*)node->name, "gpg_id") == 0){
 			text = (char*)xmlNodeGetContent(node);
 			if(text) strncpy(options->gpg_id, text, SHORT_STR);
@@ -132,7 +128,6 @@ write_config()
 	}
 	doc = xmlNewDoc((xmlChar*) "1.0");
 	root = xmlNewDocNode(doc, NULL, (xmlChar*)"pwm_config", NULL);
-	xmlNewChild(root, NULL, (xmlChar*)"gpg_path", (xmlChar*)options->gpg_path);
 	xmlNewChild(root, NULL, (xmlChar*)"gpg_id", (xmlChar*)options->gpg_id);
 	xmlNewChild(root, NULL, (xmlChar*)"password_file", (xmlChar*)options->password_file);
 

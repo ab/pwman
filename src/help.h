@@ -45,6 +45,10 @@ static char *help[] = {
 	"	o		edit options\n",
 	"	^W		write database to file\n",
 	"	^R		read database from file\n",
+	"	I		import password from file\n",
+	"	E		export password to file\n",
+	"	^G		Generate password\n",
+	"	^F		Forget passphrase\n",
 	NULL
 };
 

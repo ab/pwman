@@ -24,6 +24,7 @@
 #include <time.h>
 
 char * statusline_ask_str(char *, char*, int);
+Pw *get_current_item();
 
 int should_resize = FALSE;
 int can_resize = FALSE;
@@ -173,12 +174,12 @@ init_ui()
 int
 run_ui()
 {
+	Pw *current_item;
 	int ch;
 	int i = 0;
-	time_t last_read;
 	char msg[80];
 
-	last_read = time(NULL);
+	time_base = time(NULL);
 
 	while(1){
 		can_resize = TRUE;
@@ -189,24 +190,17 @@ run_ui()
 		statusline_clear();
 		can_resize = FALSE;
 
-		if((last_read < (time(NULL) - (options->passphrase_timeout*60)))
+		if((time_base < (time(NULL) - (options->passphrase_timeout*60)))
 				&& options->passphrase_timeout != 0 && tolower(ch) != 'q'){
 			write_file();
 			free_database();
-			def_prog_mode();
-			end_ui();
 
-			puts("\n\nPassphrase has timed out and you must enter it again.");
-			puts("Set timeout to 0 to disable this.\n\n");
+			statusline_msg("Passphrase has timed out and you must enter it again.");
+			getch();
 			
 			read_file();
-			puts("Press any key to continue");
-			getch();
 
-			last_read = time(NULL);
-
-			init_ui();
-			reset_prog_mode();
+			time_base = time(NULL);
 		}
 		
 		switch(ch){
@@ -231,11 +225,13 @@ run_ui()
 			case 'e':
 			case ' ':
 			case 13:
-				edit_pw(curitem);
+				current_item = get_current_item();
+				edit_pw(current_item);
 				break;
 			case 'd':
 			case 0x14A:
-				delete_pw_ui(curitem);
+				current_item = get_current_item();
+				delete_pw_ui(current_item);
 				break;
 			case 'h':
 				hide_cursor();
@@ -247,39 +243,33 @@ run_ui()
 				edit_options();
 				break;
 			case 0x17:
-/*				def_prog_mode();
-				end_ui();
-*/				
 				write_file();
-/*				puts("Press any key to continue");
-				getch();
-
-				init_ui();
-				reset_prog_mode();*/
 				break;
 			case 0x12:
 				free_database();
-				def_prog_mode();
-				end_ui();
-
 				read_file();
-				puts("Press any key to continue");
-				getch();
-				
-				init_ui();
-				reset_prog_mode();
+				refresh_list();
+				break;
+			case 0x07:
+				pwgen_indep();
+				break;
+			case 0x06:
+				forget_passphrase();
 				break;
 			case 0x0C:
 				refresh_windows();
 				break;
 			case '/':
 				get_filter();
+				curitem = 1;
 				break;
 			case 'E':
-				export_passwd(curitem);
+				current_item = get_current_item();
+				export_passwd(current_item);
 				break;
 			case 'I':
 				import_passwd();
+				refresh_list();
 				break;
 			case 'l':
 				i = launch(curitem);
@@ -393,13 +383,73 @@ statusline_ask_str(char *msg, char *input, int len)
 }
 
 char *
+statusline_ask_str_with_autogen(char *msg, char *input, int len, char *(*autogen)(char *), int ch)
+{
+	int i = 0;
+	int c;
+	char *text[2], *s;
+	int x;
+
+	if(input == NULL){
+		input = malloc(len);
+	}
+	text[0] = malloc(LONG_STR);
+	text[1] = malloc(LONG_STR);
+	
+	strncpy(text[1], msg, LONG_STR);
+	if(s = strrchr(text[1], ':')){
+		*s = 0;
+	}
+	snprintf(text[0], LONG_STR, "%s(%c for autogen):\t", text[1],ch);
+	x = strlen(text[0]) + 5;
+
+	statusline_clear();
+	statusline_msg(text[0]);
+
+	show_cursor();
+	noecho();
+
+	wmove(bottom, 1, x);
+
+	while(i < len){
+		c = wgetch(bottom);
+		if(c == 0x7f){
+			if(i){
+				i--;
+				mvwaddch(bottom, 1, x+i, ' ');
+				wmove(bottom, 1, x+i);
+			}
+		} else if(c == 0xd){
+			input[i] = 0;
+			break;
+		} else if(c == ch){
+			input = autogen(input);
+			break;
+		} else {
+			input[i] = c;
+			mvwaddch(bottom, 1, x + i, c);
+			i++;
+		}
+	}
+	
+	hide_cursor();
+	
+	statusline_clear();
+
+	free(text[0]);
+	free(text[1]);
+
+	return input;
+}
+
+char *
 statusline_ask_passwd(char *msg, char *input, int len)
 {
 	int i = 0;
 	int c;
 	int x = strlen(msg) + 5;
 
-	if(input == NULL){
+	if(!input){
 		input = malloc(len);
 	}
 	statusline_clear();
@@ -407,6 +457,8 @@ statusline_ask_passwd(char *msg, char *input, int len)
 
 	show_cursor();
 	noecho();
+
+	wmove(bottom, 1, x);
 
 	while(i < len){
 		c = wgetch(bottom);

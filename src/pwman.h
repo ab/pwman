@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <config.h>
+#include <time.h>
 
 #define CONF_FILE 	".pwmanrc" 
 
@@ -61,7 +62,6 @@ typedef struct {
 } PwFilter;
 
 typedef struct {
-	char *gpg_path;
 	char *gpg_id;
 	char *password_file;
 	int passphrase_timeout;
@@ -71,6 +71,7 @@ typedef struct {
 Options *options;
 int write_options;
 Pw *pwlist;
+time_t time_base;
 
 char *trim_ws(char*);
 int init_ui();

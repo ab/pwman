@@ -21,8 +21,10 @@
 #include <ui.h>
 #include <pwman.h>
 
+extern char *pwgen_ask();
 int disp_h = 15, disp_w = 60;
 extern int curitem;
+extern WINDOW *bottom;
 
 int
 add_pw_ui()
@@ -32,16 +34,49 @@ add_pw_ui()
 		{"Name:\t", NULL, NAME_LEN, STRING},
 		{"Host:\t", NULL, HOST_LEN, STRING},
 		{"User:\t", NULL, USER_LEN, STRING},
-		{"Password:\t", NULL, PASS_LEN, STRING},
+		{"Password:\t", NULL, PASS_LEN, STRING, pwgen_ask},
 		{"Launch Command:\t", NULL, LAUNCH_LEN, STRING}
 	};
-	int i;
+	int i, x;
 
 	pw = new_pw(); 
 	statusline_ask_str(fields[0].name, pw->name, NAME_LEN);
 	statusline_ask_str(fields[1].name, pw->host, HOST_LEN);
 	statusline_ask_str(fields[2].name, pw->user, USER_LEN);
-	statusline_ask_str(fields[3].name, pw->passwd, PASS_LEN);
+/*
+		int x = strlen(msg) + 5;
+
+	if(input == NULL){
+		input = malloc(len);
+	}
+	statusline_clear();
+	statusline_msg(msg);
+
+	echo();
+	show_cursor();
+	mvwgetnstr(bottom, 1, x, input, len);
+	noecho();
+	hide_cursor();
+
+	statusline_clear();*/
+
+	statusline_ask_str_with_autogen(fields[3].name, pw->passwd, PASS_LEN, fields[3].autogen, 0x07);
+/*	statusline_msg(fields[3].name);
+	x = strlen(fields[3].name) + 5;
+
+	if((i = getch()) == 0x07){
+		pw->passwd = fields[3].autogen();
+	} else {
+		echo();
+		show_cursor();
+		mvwgetnstr(bottom, 1, x, pw->passwd, PASS_LEN);
+		mvwaddch(bottom, 1, x, i);
+		wmove(bottom, 1, x+1);
+		noecho();
+		hide_cursor();
+		statusline_clear();
+	}*/
+	
 	statusline_ask_str(fields[4].name, pw->launch, LAUNCH_LEN);
 	
 	fields[0].value = pw->name;
@@ -64,14 +99,15 @@ add_pw_ui()
 }
 
 int
-delete_pw_ui(int i)
+delete_pw_ui(Pw *pw)
 {
-	Pw* pw;
+	int i;
 	char str[V_LONG_STR];	
 	
-	for(pw = pwlist; (i > 0 ) && (pw != NULL); i--, pw = pw->next){}
-	if(pw == NULL){ return -1; }
-
+	if(pw == NULL){
+		return -1;
+	}
+	
 	snprintf(str, V_LONG_STR, "Really delete \"%s\"", pw->name);
 	i = statusline_yes_no(str, 0);
 	if(i){
@@ -84,22 +120,22 @@ delete_pw_ui(int i)
 }
 
 int
-edit_pw(int i)
+edit_pw(Pw *pw)
 {
-	Pw *pw;
 	InputField fields[] = {
 		{"Name:\t", NULL, NAME_LEN, STRING},
 		{"Host:\t", NULL, HOST_LEN, STRING},
 		{"User:\t", NULL, USER_LEN, STRING},
-		{"Password:\t", NULL, PASS_LEN, STRING},
+		{"Password:\t", NULL, PASS_LEN, STRING, pwgen_ask},
 		{"Launch Command:\t", NULL, LAUNCH_LEN, STRING}
 	};
-	
+
+	if(pw == NULL){
+		return -1;
+	}
 	/*
 	 * Get specified password
 	 */
-	for(pw = pwlist; (i > 0 ) && (pw != NULL); i--, pw = pw->next){}
-	if(pw == NULL){ return -1; }
 
 	fields[0].value = pw->name;
 	fields[1].value = pw->host;
@@ -118,7 +154,6 @@ int
 edit_options()
 {
 	InputField fields[] = {
-		{"GnuPG Path:\t", options->gpg_path, MED_STR, STRING},
 		{"GnuPG ID:\t", options->gpg_id, SHORT_STR, STRING},
 		{"Password File:\t", options->password_file, LONG_STR, STRING},
 		{"Passphrase Timeout(in minutes):\t", &options->passphrase_timeout, SHORT_STR, INT}
@@ -200,7 +235,9 @@ int input_dialog(InputField *fields, int num_fields, char *title)
 	while((ch = wgetch(dialog_win)) != 'q'){
 		if( (ch >= '1') && (ch <= NUM_TO_CHAR(num_fields)) ){
 			i = CHAR_TO_NUM(ch);
-			if(fields[i].type == STRING){
+			if(fields[i].autogen != NULL){
+				fields[i].value = (void*)statusline_ask_str_with_autogen(fields[i].name, (char*)fields[i].value, fields[i].max_length, fields[i].autogen, 0x07); 
+			} else if(fields[i].type == STRING){
 				fields[i].value = (void*)statusline_ask_str(fields[i].name, (char*)fields[i].value, fields[i].max_length);
 			} else if(fields[i].type == INT){
 				statusline_ask_num(fields[i].name, (int*)fields[i].value);

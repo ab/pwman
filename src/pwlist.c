@@ -23,11 +23,11 @@
 #include <unistd.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
+#include <gpgme.h>
 
 int pwindex = 0;
 extern int errno;
 void free_pw(Pw*);
-xmlDocPtr gnupg_read(char*);
 
 int
 init_database()
@@ -178,12 +178,10 @@ write_file()
 
 	if(!options->password_file){
 		statusline_msg("Password file not set\n");
-		getch();
 		return -1;
 	}
 	if(!pwlist){
 		statusline_msg("Bad password list\n");
-		getch();
 		return -1;
 	}
 	doc = xmlNewDoc((xmlChar*)"1.0");
@@ -239,24 +237,26 @@ read_file()
 {
 	char *buf, *cmd, *s, *text;
 	FILE *fp;
+	int i;
 	xmlNodePtr node, root;
 	xmlDocPtr doc;
-	doc = gnupg_read(options->password_file);
-	/*doc = xmlParseFile(options->password_file);*/
-	if(!doc){
-		statusline_msg("Bad password data in file\n");
+	
+	while((i = gnupg_read(options->password_file, &doc)) == GPGME_No_Passphrase){	
+		statusline_msg("Bad passphrase");
 		getch();
+	}
+	if(i != 0 || !doc){
+		statusline_msg("Bad xml Data");
 		return -1;
 	}
 	root = xmlDocGetRootElement(doc);
 	if(!root || !root->name	|| (strcmp((char*)root->name, "PWMan_List") != 0) ){
-		statusline_msg("Badly Formed password data\n");
-		getch();
+		statusline_msg("Badly Formed password data");
 		return -1;
 	}
 	for(node = root->children; node != NULL; node = node->next){
 		if(!node || !node->name){
-			statusline_msg("Messed up xml node\n");
+			statusline_msg("Messed up xml node");
 		} else if( strcmp((char*)node->name, "PW_Item") == 0){
 			read_password_node(node);
 		}

@@ -64,6 +64,34 @@ highlight_line(int line)
         scrollok(list, TRUE);
 }
 
+Pw *
+get_current_item()
+{	
+	Pw *iter;
+	int i;
+
+	i = -1;
+	iter = pwlist;
+
+	while(iter != NULL){
+		if( apply_filter(iter, options->filter) ){
+			i++;
+		}
+		if( i == curitem ){
+			break;
+		}
+		iter = iter->next;
+	}
+/*	fprintf(stderr, "%d.", curitem);
+	for(iter = pwlist; (iter != NULL) && i <= curitem; iter = iter->next){
+		if( apply_filter(iter, options->filter) ){
+			i++;	
+		}	
+	}*/
+
+	return iter;
+}
+
 int
 refresh_list()
 {
@@ -80,6 +108,7 @@ refresh_list()
 	lines = 0;
 
 	list_headerline();
+
 	if(curitem < 0){
 		curitem = 0;
 	}
@@ -122,7 +151,6 @@ clear_list()
 	for(i = 0; i < COLS; i++){
 		mvaddch(2, i, ' ');
 	}
-	wrefresh(list);
 }
 
 int
