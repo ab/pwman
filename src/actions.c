@@ -276,10 +276,16 @@ int
 list_add_sublist()
 {
 	char *name;
-	PWList *sublist;
+	PWList *sublist, *iter;
 
 	name = malloc(NAME_LEN);
 	statusline_ask_str("Sublist Name:", name, NAME_LEN);
+	for(iter = current_pw_sublist->sublists; iter != NULL; iter = iter->next){
+		if( strcmp(iter->name, name) == 0){
+			free(name);
+			return -1;
+		}
+	}
 	sublist = new_pwlist(name);
 
 	add_pw_sublist(current_pw_sublist, sublist);
@@ -404,6 +410,9 @@ list_move_item()
 					
 					/* if user just enters nothing, do nothing */
 					if(answer[0] == 0){
+						return 0;
+					}
+					if( strcmp(answer, curpwl->name) == 0 ){
 						return 0;
 					}
 

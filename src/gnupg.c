@@ -48,6 +48,7 @@
 
 int passphrase_good = 0;
 extern int errno;
+extern int write_options;
 
 int 
 gnupg_exec(char *path, char *args[], FILE *stream[3])
@@ -406,6 +407,7 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 		
 		passphrase = (char*)get_passphrase();
 		if(passphrase == NULL){
+			write_options = 0;
 			filename[0] = 0;
 			break;
 		}
