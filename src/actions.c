@@ -293,6 +293,18 @@ list_add_sublist()
 }
 
 int
+list_at_top_level()
+{
+	if(current_pw_sublist->parent){
+		list_up_one_level();
+		refresh_list();
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+int
 list_select_item()
 {
 	Pw* curpw;

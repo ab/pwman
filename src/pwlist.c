@@ -141,6 +141,8 @@ add_pw_sublist(PWList *parent, PWList *new)
 
 	current = parent->sublists;
 	new->parent = parent;
+	new->current_item = 1;
+
 	if(current == NULL){
 		debug("add_pw_sublist: current = NULL");
 		parent->sublists = new;
@@ -388,6 +390,8 @@ read_pwlist(xmlNodePtr parent, PWList *parent_list)
 	if(parent_list == NULL){
 		pwlist = new;
 		current_pw_sublist = pwlist;
+
+		pwlist->current_item = 0;
 	} else {
 		add_pw_sublist(parent_list, new);
 	}

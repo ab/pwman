@@ -23,7 +23,7 @@
 
 WINDOW *list = NULL;
 int lines = 0;
-int curitem = 0;
+//int curitem = 0;
 
 int
 init_list()
@@ -75,7 +75,7 @@ get_highlighted_sublist()
 
 	for(iter = current_pw_sublist->sublists; iter != NULL; iter = iter->next){
 		i++;
-		if(i == curitem){
+		if(i == current_pw_sublist->current_item){
 			break;
 		}
 	}
@@ -99,7 +99,7 @@ get_highlighted_item()
 		if( apply_filter(iter, options->filter) ){
 			i++;
 		}
-		if( i == curitem ){
+		if( i == current_pw_sublist->current_item ){
 			debug("get_highlighted_item: found %d, break now", i);
 			return iter;
 		}
@@ -122,14 +122,14 @@ get_highlighted_type()
 	int i = -1;
 
 	if(current_pw_sublist->parent){
-		if(curitem == 0){
+		if(current_pw_sublist->current_item == 0){
 			return PW_UPLEVEL;
 		}
 		i++;
 	}
 	for(listiter = current_pw_sublist->sublists; listiter != NULL; listiter = listiter->next){
 		i++;
-		if(i == curitem){
+		if(i == current_pw_sublist->current_item){
 			return PW_SUBLIST;
 		}
 	}
@@ -138,7 +138,7 @@ get_highlighted_type()
 		if( apply_filter(iter, options->filter) ){
 			i++;
 		}
-		if( i == curitem ){
+		if( i == current_pw_sublist->current_item ){
 			return PW_ITEM;
 		}
 	}
@@ -167,18 +167,18 @@ refresh_list()
 
 	list_headerline();
 
-	if(curitem < 0){
-		curitem = 0;
+	if(current_pw_sublist->current_item < 0){
+		current_pw_sublist->current_item = 0;
 	}
-	if(curitem < first_list_item){
-		first_list_item = curitem;		
-	} else if((curitem > LAST_LIST_ITEM)){
-		first_list_item = curitem - (LIST_LINES-1);
+	if(current_pw_sublist->current_item < first_list_item){
+		first_list_item = current_pw_sublist->current_item;		
+	} else if((current_pw_sublist->current_item > LAST_LIST_ITEM)){
+		first_list_item = current_pw_sublist->current_item - (LIST_LINES-1);
 	}
 
 	if(current_pw_sublist->parent){
 		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
-			if(lines == curitem){
+			if(lines == current_pw_sublist->current_item){
 				highlight_line(num_shown);
 			} else {
 				wattrset(list, A_BOLD);
@@ -193,7 +193,7 @@ refresh_list()
 	}
 	for(listiter = current_pw_sublist->sublists; listiter != NULL; listiter = listiter->next){
 		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
-			if(lines == curitem){
+			if(lines == current_pw_sublist->current_item){
 				highlight_line(num_shown);
 			} else {
 				wattrset(list, A_BOLD);
@@ -212,7 +212,7 @@ refresh_list()
 		 */
 		if( apply_filter(iter, options->filter) ){
 			if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
-				if(lines == curitem){
+				if(lines == current_pw_sublist->current_item){
 					highlight_line(num_shown);
 				}
 				mvwaddnstr(list, num_shown, NAMEPOS, iter->name, NAMELEN);
@@ -262,10 +262,10 @@ list_headerline()
 int 
 list_page_up()
 {
-	curitem -= (LIST_LINES - 1);
+	current_pw_sublist->current_item -= (LIST_LINES - 1);
 
-	if(curitem < 1){
-		curitem = 0;
+	if(current_pw_sublist->current_item < 1){
+		current_pw_sublist->current_item = 0;
 	}
 	refresh_list();
 }
@@ -273,10 +273,10 @@ list_page_up()
 int
 list_page_down()
 {
-	curitem += (LIST_LINES - 1);
+	current_pw_sublist->current_item += (LIST_LINES - 1);
 
-	if(curitem >= (lines - 1)){
-		curitem = lines -1;
+	if(current_pw_sublist->current_item >= (lines - 1)){
+		current_pw_sublist->current_item = lines -1;
 	}
 	refresh_list();
 }
@@ -284,11 +284,11 @@ list_page_down()
 int
 list_up()
 {
-	if(curitem < 1){
+	if(current_pw_sublist->current_item < 1){
 		return;
 	}
 
-	curitem--;
+	current_pw_sublist->current_item--;
 	
 	refresh_list();
 }
@@ -296,11 +296,11 @@ list_up()
 int
 list_down()
 {
-	if(curitem >= (lines-1)){
+	if(current_pw_sublist->current_item >= (lines-1)){
 		return;
 	}
 
-	curitem++;
+	current_pw_sublist->current_item++;
 
 	refresh_list();
 }

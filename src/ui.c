@@ -209,7 +209,9 @@ run_ui()
 		switch(ch){
 			case 'Q':
 			case 'q':
-				return;
+				if(list_at_top_level()){
+					return;
+				}
 				break;
 			case '?':
 				display_help();

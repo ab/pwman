@@ -20,7 +20,7 @@
 
 #include <pwman.h>
 
-extern int curitem;
+/*xtern int curitem;*/
 
 PwFilter *
 new_filter()
@@ -117,7 +117,7 @@ get_filter()
 	}
 	statusline_ask_str("String to search for: ", options->filter->filter, STRING_MEDIUM);
 
-	curitem = -1;
+	current_pw_sublist->current_item = -1;
 	refresh_list();
 }
 

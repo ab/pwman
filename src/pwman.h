@@ -72,6 +72,9 @@ struct _PWList {
 	struct _PWList *parent;
 	struct _PWList *sublists;
 	struct _PWList *next;
+
+	/* ui stuff, shouldn't be here but this is a quick hack */
+	int current_item;
 };
 
 typedef struct _PWList PWList;
