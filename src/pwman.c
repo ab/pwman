@@ -58,7 +58,7 @@ delete_lock_file()
 {
 	char fn[V_LONG_STR];
 	
-	snprintf(fn, V_LONG_STR, "/tmp/%s.lock", options->password_file);
+	snprintf(fn, V_LONG_STR, "%s.lock", options->password_file);
 	unlink(fn);
 }
 
