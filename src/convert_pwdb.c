@@ -216,8 +216,8 @@ write_new_doc(PWList *pwlist)
 	xmlDocPtr doc;
 	xmlNodePtr root;
 
-	if(!pwlist){
-		puts("write_new_file: bad password data");
+	if(pwlist == NULL){
+		puts("write_new_doc: bad password data");
 		exit(-1);
 	}
 	snprintf(vers, 5, "%d", FF_VERSION);
