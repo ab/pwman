@@ -51,6 +51,10 @@ pwstrcasestr(char *haystack, char *needle){
 int
 apply_filter(Pw *pw, PwFilter* fil)
 {
+	if( (fil == NULL) || (fil->filter == NULL) ){
+		/* no filter object */
+		return 1;
+	}
 	if( strlen(fil->filter) == 0 ){
 		/* no filter */
 		return 1;
