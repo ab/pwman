@@ -122,7 +122,12 @@ int
 str_in_buf(char *buf, char *check)
 {
 	regex_t reg;
+
+	debug("str_in_buf: start checking");
 	
+	if( (buf == NULL) || (check == NULL) ){
+		return 0;
+	}
 	regcomp(&reg, check ,0);
 	if(regexec(&reg, buf, 0, NULL , 0) == 0){
 		regfree(&reg);
@@ -219,92 +224,6 @@ forget_passphrase()
 	debug("forget_passphrase: passphrase forgotten");
 	statusline_msg("Passphrase forgotten");
 }
-/*
-int
-check_gnupg_passphrase(char *filename)
-{
-	regex_t reg;
-	char *passphrase, *args[9], buf[80];
-	FILE *streams[3];
-	int pid, good = 1;
-
-	args[0] = "gpg";
-	args[1] = "--passphrase-fd";
-	args[2] = "0";
-	args[3] = "--no-verbose";
-	args[4] = "--batch";
-	args[5] = "--output";
-	args[6] = "/dev/null";
-	args[7] = filename;
-	args[8] = NULL;
-
-	while(1){
-		passphrase = (char *)get_passphrase();
-		good = 1;
-
-		if((passphrase == NULL) || (passphrase[0] == 0)){
-			return -1;
-		}
-
-		pid = gnupg_exec(options->gpg_path, args, streams);
-
-		fputs(passphrase, streams[STDIN]);
-		fputc( '\n', streams[STDIN]);
-		fclose(streams[STDIN]);
-
-		while(fgets(buf, 79, streams[STDERR]) != NULL){
-			regcomp(&reg, "public key decryption failed: bad passphrase",0);
-			if(regexec(&reg, buf, 0, NULL , 0) == 0){
-				good = 0;
-				break;
-			}
-		}
-		gnupg_exec_end(pid);
-	
-		if(good){
-			("good pasphrase");
-			return 0;
-		}
-	}
-}
-*/
-/*int
-check_gnupg_id(char *id, int sec)
-{	
-	regex_t reg;
-	int pid;
-	char text[V_LONG_STR], idstr[LONG_STR], *args[3];
-	FILE *streams[3];
-	
-	debug("check_gnupg_id: check gnupg id");	
-	if( strchr(id, '%') ){ * hmm, could be format string bug so tell fuck off *
-		return 0;
-	} else {
-		snprintf(idstr, LONG_STR, "[^<]*<%s>", id);
-	}
-	args[0] = "gpg";
-	if(sec){
-		args[1] = "--list-secret-keys";
-	} else {
-		args[1] = "--list-keys";
-	}
-	args[2] = NULL;
-
-	pid = gnupg_exec(options->gpg_path, args, streams);
-
-	//close( fileno(streams[STDERR]) );
-	while( fgets(text, 80, streams[STDOUT]) ){
-		regcomp(&reg, idstr,0);
-		if(regexec(&reg, text, 0, NULL , 0) == 0){
-			gnupg_exec_end(pid);
-			return 1; 
-		}
-	}
-	
-	gnupg_exec_end(pid);
-	
-	return 0;
-}*/
 
 int
 check_gnupg_id(char *id)
@@ -377,7 +296,7 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 {
 	FILE *streams[3];
 	char cmd[V_LONG_STR], buf[V_LONG_STR];
-	char *args[9];
+	char *args[10];
 	char *err;
 	int pid;
 	
@@ -398,12 +317,14 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 	args[0] = "gpg";
 	args[1] = "-e";
 	args[2] = "-a";
-	args[3] = "--yes";
-	args[4] = "-r";
-	args[5] = id;
-	args[6] = "-o";
-	args[7] = filename;
-	args[8] = NULL;
+	args[3] = "--always-trust"; /* gets rid of error when moving 
+				       keys from other machines */
+	args[4] = "--yes";
+	args[5] = "-r";
+	args[6] = id;
+	args[7] = "-o";
+	args[8] = filename;
+	args[9] = NULL;
 
 	while(1){
 		/* clear err buffer */
