@@ -95,9 +95,10 @@ gnupg_exec(char *path, char *args[], FILE *stream[3])
 void
 gnupg_exec_end(int pid, FILE *stream[3])
 {
-	fclose(stream[0]);
-	fclose(stream[1]);
-	fclose(stream[2]);
+	debug("gnupg_exec_end : close streams");
+	if(stream[0]){ fclose(stream[0]); }
+	if(stream[1]){ fclose(stream[1]); }
+	if(stream[2]){ fclose(stream[2]); }
 
 	debug("waiting for pid %d", pid);
 	waitpid(pid, NULL, 0);
@@ -424,6 +425,7 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 		fputs( passphrase, streams[STDIN]);
 		fputc( '\n' , streams[STDIN]);
 		fclose(streams[STDIN]);
+		streams[STDIN] = NULL;
 
 		debug("gnupg_read: start reading data");
 		while( fgets(buf, STRING_LONG - 1, streams[STDOUT]) != NULL ){
