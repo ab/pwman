@@ -3,6 +3,7 @@
 2002-4-5  - Added a passphrase timeout option
 2002-4-6  - Changed configure.in so that it now builds on openbsd
 2002-4-6  - Added lock files on the password files
+2002-4-6  - Now Building on MacOSX10.1, FreeBSD 4.5 & Solaris 8 also
 
 0.1.1
 2002-3-30 - Few bug fixes and error handling. Code clean up.

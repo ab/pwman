@@ -7,7 +7,8 @@ pwman.o: pwman.c pwman.h /usr/include/curses.h /usr/include/ncurses.h \
  ../config.h /usr/include/signal.h /usr/include/sys/signal.h \
  /usr/include/machine/signal.h /usr/include/machine/trap.h \
  /usr/include/sys/siginfo.h /usr/include/sys/time.h \
- /usr/include/time.h
+ /usr/include/time.h /usr/include/unistd.h /usr/include/sys/unistd.h \
+ /usr/include/sys/stat.h /usr/include/fcntl.h
 pwman.c :
 pwman.h :
 /usr/include/curses.h :
@@ -31,3 +32,7 @@ pwman.h :
 /usr/include/sys/siginfo.h :
 /usr/include/sys/time.h :
 /usr/include/time.h :
+/usr/include/unistd.h :
+/usr/include/sys/unistd.h :
+/usr/include/sys/stat.h :
+/usr/include/fcntl.h :
