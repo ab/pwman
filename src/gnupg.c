@@ -386,6 +386,10 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 	}
 	if(check_gnupg_id(id) != 0){
 		get_gnupg_id(id);
+
+		if(id[0] == 0){
+			return -1;
+		}
 	}
 
 	debug("gnupg_write: start writing");
