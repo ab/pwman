@@ -416,7 +416,11 @@ read_file()
 		statusline_msg("Badly Formed password data");
 		return -1;
 	}
-	i = atoi( xmlGetProp(root, (xmlChar*)"version") );
+	if( buf = xmlGetProp(root, (xmlChar*)"version") ){
+		i = atoi( buf );
+	} else {
+		i = 0;
+	}
 	if(i < FF_VERSION){
 		statusline_msg("Password File in older format, use convert_pwdb");
 		return -1;
