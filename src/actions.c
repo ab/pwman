@@ -21,16 +21,17 @@
 #include <ui.h>
 #include <pwman.h>
 
-extern Pw * get_highlighted_item();
-extern PWList *get_highlighted_sublist();
-extern PWList * new_pwlist(char*);
+extern Pw * uilist_get_highlighted_item();
+extern PWList * uilist_get_highlighted_sublist();
+extern PWList * pwlist_new(char*);
 extern char *pwgen_ask();
+
 int disp_h = 15, disp_w = 60;
 extern int curitem;
 extern WINDOW *bottom;
 
 int
-list_add_pw()
+action_list_add_pw()
 {
 	Pw *pw;
 	InputField fields[] = {
@@ -42,10 +43,10 @@ list_add_pw()
 	};
 	int i, x;
 
-	pw = new_pw(); 
-	statusline_ask_str(fields[0].name, pw->name, STRING_MEDIUM);
-	statusline_ask_str(fields[1].name, pw->host, STRING_MEDIUM);
-	statusline_ask_str(fields[2].name, pw->user, STRING_MEDIUM);
+	pw = pwlist_new_pw(); 
+	ui_statusline_ask_str(fields[0].name, pw->name, STRING_MEDIUM);
+	ui_statusline_ask_str(fields[1].name, pw->host, STRING_MEDIUM);
+	ui_statusline_ask_str(fields[2].name, pw->user, STRING_MEDIUM);
 /*
 		int x = strlen(msg) + 5;
 
@@ -63,7 +64,7 @@ list_add_pw()
 
 	statusline_clear();*/
 
-	statusline_ask_str_with_autogen(fields[3].name, pw->passwd, STRING_SHORT, fields[3].autogen, 0x07);
+	ui_statusline_ask_str_with_autogen(fields[3].name, pw->passwd, STRING_SHORT, fields[3].autogen, 0x07);
 /*	statusline_msg(fields[3].name);
 	x = strlen(fields[3].name) + 5;
 
@@ -80,7 +81,7 @@ list_add_pw()
 		statusline_clear();
 	}*/
 	
-	statusline_ask_str(fields[4].name, pw->launch, STRING_LONG);
+	ui_statusline_ask_str(fields[4].name, pw->launch, STRING_LONG);
 	
 	fields[0].value = pw->name;
 	fields[1].value = pw->host;
@@ -88,21 +89,21 @@ list_add_pw()
 	fields[3].value = pw->passwd;
 	fields[4].value = pw->launch;
 
-	i = yes_no_dialog(fields, (sizeof(fields)/sizeof(InputField)), NULL, "Add this entry");
+	i = action_yes_no_dialog(fields, (sizeof(fields)/sizeof(InputField)), NULL, "Add this entry");
 
 	if(i){
-		add_pw_ptr(current_pw_sublist, pw);
-		statusline_msg("New password added");
+		pwlist_add_ptr(current_pw_sublist, pw);
+		ui_statusline_msg("New password added");
 	} else {
-		free_pw(pw);
-		statusline_msg("New password cancelled");
+		pwlist_free_pw(pw);
+		ui_statusline_msg("New password cancelled");
 	}
 
-	refresh_list();
+	uilist_refresh();
 }
 
 int
-edit_pw(Pw *pw)
+action_edit_pw(Pw *pw)
 {
 	InputField fields[] = {
 		{"Name:\t", NULL, STRING_MEDIUM, STRING},
@@ -129,11 +130,11 @@ edit_pw(Pw *pw)
 	 * initialize the info window
 	 */
 
-	input_dialog(fields, (sizeof(fields)/sizeof(InputField)), "Edit Password");
+	action_input_dialog(fields, (sizeof(fields)/sizeof(InputField)), "Edit Password");
 }
 
 int
-edit_options()
+action_edit_options()
 {
 	InputField fields[] = {
 		{"GnuPG Path:\t", options->gpg_path, STRING_LONG, STRING},
@@ -142,13 +143,13 @@ edit_options()
 		{"Passphrase Timeout(in minutes):\t", &options->passphrase_timeout, STRING_SHORT, INT}
 	};
 
-	input_dialog(fields, (sizeof(fields)/sizeof(InputField)), "Edit Preferences");
+	action_input_dialog(fields, (sizeof(fields)/sizeof(InputField)), "Edit Preferences");
 
 	write_options = TRUE;
 }
 
 int 
-input_dialog_draw_items(WINDOW* dialog_win, InputField *fields, 
+action_input_dialog_draw_items(WINDOW* dialog_win, InputField *fields, 
 		int num_fields, char *title, char *msg)
 {
 	int i, h = 0;
@@ -194,7 +195,7 @@ input_dialog_draw_items(WINDOW* dialog_win, InputField *fields,
 }
 
 int 
-input_dialog(InputField *fields, int num_fields, char *title)
+action_input_dialog(InputField *fields, int num_fields, char *title)
 {
 	int ch, i;
 	char *ret;
@@ -213,7 +214,7 @@ input_dialog(InputField *fields, int num_fields, char *title)
 	dialog_win = newwin(disp_h, disp_w, (LINES - disp_h)/2, (COLS - disp_w)/2);
 	keypad(dialog_win, TRUE);
 
-	input_dialog_draw_items(dialog_win, fields, num_fields, title, msg);
+	action_input_dialog_draw_items(dialog_win, fields, num_fields, title, msg);
 	/*
 	 * actions loop
 	 */
@@ -221,16 +222,18 @@ input_dialog(InputField *fields, int num_fields, char *title)
 		if( (ch >= '1') && (ch <= NUM_TO_CHAR(num_fields)) ){
 			i = CHAR_TO_NUM(ch);
 			if(fields[i].autogen != NULL){
-				fields[i].value = (void*)statusline_ask_str_with_autogen(fields[i].name, (char*)fields[i].value, fields[i].max_length, fields[i].autogen, 0x07); 
+				fields[i].value = (void*)ui_statusline_ask_str_with_autogen(fields[i].name, 
+							(char*)fields[i].value, fields[i].max_length, fields[i].autogen, 0x07); 
 			} else if(fields[i].type == STRING){
-				fields[i].value = (void*)statusline_ask_str(fields[i].name, (char*)fields[i].value, fields[i].max_length);
+				fields[i].value = (void*)ui_statusline_ask_str(fields[i].name, 
+							(char*)fields[i].value, fields[i].max_length);
 			} else if(fields[i].type == INT){
-				statusline_ask_num(fields[i].name, (int*)fields[i].value);
+				ui_statusline_ask_num(fields[i].name, (int*)fields[i].value);
 			}
-			input_dialog_draw_items(dialog_win, fields, num_fields, title, msg);
+			action_input_dialog_draw_items(dialog_win, fields, num_fields, title, msg);
 		} else if(ch == 'l'){
 			delwin(dialog_win);
-			list_launch();
+			action_list_launch();
 			break;
 		}	
 	}
@@ -238,10 +241,11 @@ input_dialog(InputField *fields, int num_fields, char *title)
 	 * clean up
 	 */
 	delwin(dialog_win);
-	refresh_list();
+	uilist_refresh();
 }
 
-int yes_no_dialog(InputField *fields, int num_fields, char *title, char *question)
+int 
+action_yes_no_dialog(InputField *fields, int num_fields, char *title, char *question)
 {
 	int ch, i;
 	char *ret;
@@ -259,45 +263,45 @@ int yes_no_dialog(InputField *fields, int num_fields, char *title, char *questio
 	dialog_win = newwin(disp_h, disp_w, (LINES - disp_h)/2, (COLS - disp_w)/2);
 	keypad(dialog_win, TRUE);
 
-	input_dialog_draw_items(dialog_win, fields, num_fields, title, NULL);
+	action_input_dialog_draw_items(dialog_win, fields, num_fields, title, NULL);
 	
-	i = statusline_yes_no(question, 1);
+	i = ui_statusline_yes_no(question, 1);
 
 	/*
 	 * clean up
 	 */
 	delwin(dialog_win);
-	refresh_list();
+	uilist_refresh();
 
 	return i;
 }
 
 int
-list_add_sublist()
+action_list_add_sublist()
 {
 	char *name;
 	PWList *sublist, *iter;
 
 	name = malloc(STRING_MEDIUM);
-	statusline_ask_str("Sublist Name:", name, STRING_MEDIUM);
+	ui_statusline_ask_str("Sublist Name:", name, STRING_MEDIUM);
 	for(iter = current_pw_sublist->sublists; iter != NULL; iter = iter->next){
 		if( strcmp(iter->name, name) == 0){
 			free(name);
 			return -1;
 		}
 	}
-	sublist = new_pwlist(name);
+	sublist = pwlist_new(name);
 
-	add_pw_sublist(current_pw_sublist, sublist);
-	refresh_list();
+	pwlist_add_sublist(current_pw_sublist, sublist);
+	uilist_refresh();
 }
 
 int
-list_at_top_level()
+action_list_at_top_level()
 {
 	if(current_pw_sublist->parent){
-		list_up_one_level();
-		refresh_list();
+		action_list_up_one_level();
+		uilist_refresh();
 		return 0;
 	} else {
 		return 1;
@@ -305,27 +309,27 @@ list_at_top_level()
 }
 
 int
-list_select_item()
+action_list_select_item()
 {
 	Pw* curpw;
 	PWList* curpwl;
 
-	switch(get_highlighted_type()){
+	switch(uilist_get_highlighted_type()){
 		case PW_ITEM:
-			curpw = get_highlighted_item();
+			curpw = uilist_get_highlighted_item();
 			if(curpw){
-				edit_pw(curpw);
+				action_edit_pw(curpw);
 			}
 			break;
 		case PW_SUBLIST:
-			curpwl = get_highlighted_sublist();
+			curpwl = uilist_get_highlighted_sublist();
 			if(curpwl){
 				current_pw_sublist = curpwl;
-				refresh_list();
+				uilist_refresh();
 			}
 			break;
 		case PW_UPLEVEL:
-			list_up_one_level();
+			action_list_up_one_level();
 			break;
 		case PW_NULL:
 		default:
@@ -335,37 +339,37 @@ list_select_item()
 }
 
 int
-list_delete_item()
+action_list_delete_item()
 {
 	Pw* curpw;
 	PWList* curpwl;
 	int i;
 	char str[STRING_LONG];
 	
-	switch(get_highlighted_type()){
+	switch(uilist_get_highlighted_type()){
 		case PW_ITEM:
-			curpw = get_highlighted_item();
+			curpw = uilist_get_highlighted_item();
 			if(curpw){
 				snprintf(str, STRING_LONG, "Really delete \"%s\"", curpw->name);
-				i = statusline_yes_no(str, 0);
+				i = ui_statusline_yes_no(str, 0);
 				if(i){
-					delete_pw(current_pw_sublist, curpw);
-					statusline_msg("Password deleted");
+					pwlist_delete_pw(current_pw_sublist, curpw);
+					ui_statusline_msg("Password deleted");
 				} else {
-					statusline_msg("Password not deleted");
+					ui_statusline_msg("Password not deleted");
 				}	
 			}
 			break;
 		case PW_SUBLIST:
-			curpwl = get_highlighted_sublist();
+			curpwl = uilist_get_highlighted_sublist();
 			if(curpwl){
 				snprintf(str, STRING_LONG, "Really delete Sublist \"%s\"", curpwl->name);
-				i = statusline_yes_no(str, 0);
+				i = ui_statusline_yes_no(str, 0);
 				if(i){
-					delete_pw_sublist(curpwl->parent, curpwl);
-					statusline_msg("Password Sublist deleted");
+					pwlist_delete_sublist(curpwl->parent, curpwl);
+					ui_statusline_msg("Password Sublist deleted");
 				} else {
-					statusline_msg("Password not deleted");
+					ui_statusline_msg("Password not deleted");
 				}
 			}
 			break;
@@ -375,11 +379,11 @@ list_delete_item()
 			/* do nothing */
 			break;
 	}
-	refresh_list();
+	uilist_refresh();
 }
 
 int
-list_move_item()
+action_list_move_item()
 {
 	Pw* curpw;
 	PWList *curpwl, *iter;
@@ -387,13 +391,13 @@ list_move_item()
 	char str[STRING_LONG];
 	char answer[STRING_MEDIUM];
 
-	switch(get_highlighted_type()){
+	switch(uilist_get_highlighted_type()){
 		case PW_ITEM:
-			curpw = get_highlighted_item();
+			curpw = uilist_get_highlighted_item();
 			if(curpw){
 				while(1){
 					snprintf(str, STRING_LONG, "Move \"%s\" to where?", curpw->name);
-					statusline_ask_str(str, answer, STRING_MEDIUM);
+					ui_statusline_ask_str(str, answer, STRING_MEDIUM);
 					
 					/* if user just enters nothing do nothing */
 					if(answer[0] == 0){
@@ -402,23 +406,23 @@ list_move_item()
 					
 					for(iter = current_pw_sublist->sublists; iter != NULL; iter = iter->next){
 						if( strcmp(iter->name, answer) == 0 ){
-							detach_pw(current_pw_sublist, curpw);
-							add_pw_ptr(iter, curpw);
-							refresh_list();
+							pwlist_detach_pw(current_pw_sublist, curpw);
+							pwlist_add_ptr(iter, curpw);
+							uilist_refresh();
 							return 0;
 						}
 					}
-					statusline_msg("Sublist does not exist, try again");
+					ui_statusline_msg("Sublist does not exist, try again");
 					getch();
 				}
 			}
 			break;
 		case PW_SUBLIST:
-			curpwl = get_highlighted_sublist();
+			curpwl = uilist_get_highlighted_sublist();
 			if(curpwl){
 				while(1){
 					snprintf(str, STRING_LONG, "Move sublist \"%s\" to where?", curpwl->name);
-					statusline_ask_str(str, answer, STRING_MEDIUM);
+					ui_statusline_ask_str(str, answer, STRING_MEDIUM);
 					
 					/* if user just enters nothing, do nothing */
 					if(answer[0] == 0){
@@ -430,13 +434,13 @@ list_move_item()
 
 					for(iter = current_pw_sublist->sublists; iter != NULL; iter = iter->next){
 						if( strcmp(iter->name, answer) == 0 ){
-							detach_pw_sublist(current_pw_sublist, curpwl);
-							add_pw_sublist(iter, curpwl);
-							refresh_list();
+							pwlist_detach_sublist(current_pw_sublist, curpwl);
+							pwlist_add_sublist(iter, curpwl);
+							uilist_refresh();
 							return 0;
 						}
 					}
-					statusline_msg("Sublist does not exist, try again");
+					ui_statusline_msg("Sublist does not exist, try again");
 					getch();
 				}
 			}
@@ -450,7 +454,7 @@ list_move_item()
 }
 
 int
-list_move_item_up_level()
+action_list_move_item_up_level()
 {
 	Pw* curpw;
 	PWList *curpwl, *iter;
@@ -458,21 +462,21 @@ list_move_item_up_level()
 	char str[STRING_LONG];
 	char answer[STRING_MEDIUM];
 
-	switch(get_highlighted_type()){
+	switch(uilist_get_highlighted_type()){
 		case PW_ITEM:
-			curpw = get_highlighted_item();
+			curpw = uilist_get_highlighted_item();
 			if(curpw && current_pw_sublist->parent){
-				detach_pw(current_pw_sublist, curpw);
-				add_pw_ptr(current_pw_sublist->parent, curpw);
-				refresh_list();
+				pwlist_detach_pw(current_pw_sublist, curpw);
+				pwlist_add_ptr(current_pw_sublist->parent, curpw);
+				uilist_refresh();
 			}
 			break;
 		case PW_SUBLIST:
-			curpwl = get_highlighted_sublist();
+			curpwl = uilist_get_highlighted_sublist();
 			if(curpwl && current_pw_sublist->parent){
-				detach_pw_sublist(current_pw_sublist, curpwl);
-				add_pw_sublist(current_pw_sublist->parent, curpwl);
-				refresh_list();
+				pwlist_detach_sublist(current_pw_sublist, curpwl);
+				pwlist_add_sublist(current_pw_sublist->parent, curpwl);
+				uilist_refresh();
 			}
 			break;
 		case PW_UPLEVEL:
@@ -484,35 +488,35 @@ list_move_item_up_level()
 }
 
 int
-list_up_one_level()
+action_list_up_one_level()
 {
 	/* move up one sublist */
 	if(current_pw_sublist->parent){
 		current_pw_sublist = current_pw_sublist->parent;
-		refresh_list();
+		uilist_refresh();
 	}
 }
 	
 int
-list_export()
+action_list_export()
 {
 	Pw* curpw;
 	PWList *curpwl;
 
 	debug("list_export: enter switch");
-	switch(get_highlighted_type()){
+	switch(uilist_get_highlighted_type()){
 		case PW_ITEM:
 			debug("list_export: is a pw");
-			curpw = get_highlighted_item();
+			curpw = uilist_get_highlighted_item();
 			if(curpw){
-				export_passwd(curpw);
+				pwlist_export_passwd(curpw);
 			}
 			break;
 		case PW_SUBLIST:
 			debug("list_export: is a pwlist");
-			curpwl = get_highlighted_sublist();
+			curpwl = uilist_get_highlighted_sublist();
 			if(curpwl){
-				export_passwd_list(curpwl);
+				pwlist_export(curpwl);
 			}
 			break;
 		case PW_UPLEVEL:
@@ -524,20 +528,20 @@ list_export()
 }
 
 int
-list_launch()
+action_list_launch()
 {
 	int i;
 	Pw* curpw;
 	char msg[STRING_LONG];
 
-	switch(get_highlighted_type()){
+	switch(uilist_get_highlighted_type()){
 		case PW_ITEM:
 			debug("list_launch: is a pw");
-			curpw = get_highlighted_item();
+			curpw = uilist_get_highlighted_item();
 			if(curpw){
 				i = launch(curpw);
 				snprintf(msg, STRING_LONG, "Application exited with code %d", i);
-				statusline_msg(msg);
+				ui_statusline_msg(msg);
 			}
 			break;
 		case PW_SUBLIST:
@@ -550,13 +554,18 @@ list_launch()
 }
 
 int
-list_read_file()
+action_list_read_file()
 {
-	free_database();
-	if(read_file() != 0){
-		pwlist = new_pwlist("Main");
+	pwlist_free_all();
+	if(pwlist_read_file() != 0){
+		pwlist = pwlist_new("Main");
 		current_pw_sublist = pwlist;
 	}
-	refresh_list();
+	uilist_refresh();
 	return -1;
 }
+
+int
+action_list_move_item_up(){}
+int 
+action_list_move_item_down(){}

@@ -23,7 +23,7 @@
 /*xtern int curitem;*/
 
 PwFilter *
-new_filter()
+filter_new()
 {
 	PwFilter *new;
 
@@ -40,7 +40,7 @@ new_filter()
  * String checking only case insensitive using gnu glibc
  */
 static char*
-pwstrcasestr(char *haystack, char *needle){
+filter_strcasestr(char *haystack, char *needle){
 #ifdef HAVE_STRCASESTR
 	return (char*)strcasestr(haystack, needle);
 #else
@@ -49,7 +49,7 @@ pwstrcasestr(char *haystack, char *needle){
 }
 
 int
-apply_filter(Pw *pw, PwFilter* fil)
+filter_apply(Pw *pw, PwFilter* fil)
 {
 	if( (fil == NULL) || (fil->filter == NULL) ){
 		/* no filter object */
@@ -61,22 +61,22 @@ apply_filter(Pw *pw, PwFilter* fil)
 	}
 	switch(fil->field){
 		case 0:
-			if( pwstrcasestr(pw->name, fil->filter) ){
+			if( filter_strcasestr(pw->name, fil->filter) ){
 				return 1;
 			}					
 			break;
 		case 1:
-			if( pwstrcasestr(pw->host, fil->filter) ){
+			if( filter_strcasestr(pw->host, fil->filter) ){
 				return 1;
 			}
 			break;
 		case 2:
-			if( pwstrcasestr(pw->user, fil->filter) ){
+			if( filter_strcasestr(pw->user, fil->filter) ){
 				return 1;
 			}
 			break;
 		case 3:
-			if( pwstrcasestr(pw->launch, fil->filter) ){
+			if( filter_strcasestr(pw->launch, fil->filter) ){
 				return 1;
 			}
 			break;
@@ -88,11 +88,11 @@ apply_filter(Pw *pw, PwFilter* fil)
 }
 
 void
-get_filter()
+filter_get()
 {
 	char c;
 
-	statusline_ask_char("Filter which field? (n)ame (h)ost (u)ser (l)aunch n(o)ne", &c, "nhulo\n");
+	ui_statusline_ask_char("Filter which field? (n)ame (h)ost (u)ser (l)aunch n(o)ne", &c, "nhulo\n");
 	switch(c){
 		case 'n':
 			options->filter->field = 0;
@@ -111,14 +111,14 @@ get_filter()
 			options->filter->field = -1;
 			options->filter->filter[0] = 0;
 
-			refresh_list();
+			uilist_refresh();
 			return;
 			break;
 	}
-	statusline_ask_str("String to search for: ", options->filter->filter, STRING_MEDIUM);
+	ui_statusline_ask_str("String to search for: ", options->filter->filter, STRING_MEDIUM);
 
 	current_pw_sublist->current_item = -1;
-	refresh_list();
+	uilist_refresh();
 }
 
 

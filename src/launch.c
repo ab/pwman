@@ -25,7 +25,7 @@
 #include <errno.h>
 
 char * 
-find_replace(char *haystack, char* needle, char* cow)
+launch_find_replace(char *haystack, char* needle, char* cow)
 {
 	char *pos;
 	int len,i;
@@ -55,7 +55,7 @@ find_replace(char *haystack, char* needle, char* cow)
 }
 
 int 
-execute(char *cmd) {
+launch_execute(char *cmd) {
 	int pid, status;
 	char *argv[4];
 
@@ -97,19 +97,19 @@ launch(Pw *pw)
 	if((pw == NULL) || (pw->launch == NULL)){
 		return -1;
 	}
-	cmd = find_replace(pw->launch, "%h", pw->host);
-	cmd = find_replace(cmd, "%u", pw->user);
-	cmd = find_replace(cmd, "%p", pw->passwd);
+	cmd = launch_find_replace(pw->launch, "%h", pw->host);
+	cmd = launch_find_replace(cmd, "%u", pw->user);
+	cmd = launch_find_replace(cmd, "%p", pw->passwd);
 
 	def_prog_mode();
-	end_ui();
+	ui_end();
 
-	i = execute(cmd);
+	i = launch_execute(cmd);
 
 	puts("Press any key to continue");
 	getch();
 	
-	init_ui();
+	ui_init();
 	reset_prog_mode();
 
 	return i;

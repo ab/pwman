@@ -26,7 +26,7 @@ int lines = 0;
 //int curitem = 0;
 
 int
-init_list()
+uilist_init()
 {
 	char str[80];
 	list = newwin(LIST_LINES, COLS, LIST_TOP, 0);
@@ -42,14 +42,14 @@ resize_list()
 */
 
 int
-free_list()
+uilist_free()
 {
 	delwin(list);
 	list = NULL;
 }
 
 int 
-highlight_line(int line)
+uilist_highlight_line(int line)
 {
 	wstandout(list);
 /*	mvwchgat(list, i, 0, -1, A_STANDOUT, 0, NULL);*/
@@ -65,7 +65,7 @@ highlight_line(int line)
 }
 
 PWList *
-get_highlighted_sublist()
+uilist_get_highlighted_sublist()
 {
 	PWList *iter;
 	int i = -1;
@@ -83,7 +83,7 @@ get_highlighted_sublist()
 }
 
 Pw *
-get_highlighted_item()
+uilist_get_highlighted_item()
 {	
 	Pw *iter;
 	PWList *listiter;
@@ -96,7 +96,7 @@ get_highlighted_item()
 	}
 		
 	for(iter = current_pw_sublist->list; iter != NULL; iter = iter->next){
-		if( apply_filter(iter, options->filter) ){
+		if( filter_apply(iter, options->filter) ){
 			i++;
 		}
 		if( i == current_pw_sublist->current_item ){
@@ -115,7 +115,7 @@ get_highlighted_item()
 }
 
 LIST_ITEM_TYPE
-get_highlighted_type()
+uilist_get_highlighted_type()
 {
 	Pw *iter;
 	PWList *listiter;
@@ -135,7 +135,7 @@ get_highlighted_type()
 	}
 		
 	for(iter = current_pw_sublist->list; iter != NULL; iter = iter->next){
-		if( apply_filter(iter, options->filter) ){
+		if( filter_apply(iter, options->filter) ){
 			i++;
 		}
 		if( i == current_pw_sublist->current_item ){
@@ -146,7 +146,7 @@ get_highlighted_type()
 }
 
 int
-refresh_list()
+uilist_refresh()
 {
 	Pw *iter;
 	PWList *listiter;
@@ -156,16 +156,16 @@ refresh_list()
 
 	debug("refresh_list: refreshing list");
 	if(list == NULL){
-		init_list();
+		uilist_init();
 	}
 	if(current_pw_sublist == NULL){
 		return -1;
 	}
 
-	clear_list();;
+	uilist_clear();;
 	lines = 0;
 
-	list_headerline();
+	uilist_headerline();
 
 	if(current_pw_sublist->current_item < 0){
 		current_pw_sublist->current_item = 0;
@@ -179,7 +179,7 @@ refresh_list()
 	if(current_pw_sublist->parent){
 		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
 			if(lines == current_pw_sublist->current_item){
-				highlight_line(num_shown);
+				uilist_highlight_line(num_shown);
 			} else {
 				wattrset(list, A_BOLD);
 			}
@@ -194,7 +194,7 @@ refresh_list()
 	for(listiter = current_pw_sublist->sublists; listiter != NULL; listiter = listiter->next){
 		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
 			if(lines == current_pw_sublist->current_item){
-				highlight_line(num_shown);
+				uilist_highlight_line(num_shown);
 			} else {
 				wattrset(list, A_BOLD);
 			}
@@ -210,10 +210,10 @@ refresh_list()
 		/*
 		 * if line satifies filter criteria increment i and lines
 		 */
-		if( apply_filter(iter, options->filter) ){
+		if( filter_apply(iter, options->filter) ){
 			if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
 				if(lines == current_pw_sublist->current_item){
-					highlight_line(num_shown);
+					uilist_highlight_line(num_shown);
 				}
 				mvwaddnstr(list, num_shown, NAMEPOS, iter->name, NAMELEN);
 				mvwaddnstr(list, num_shown, HOSTPOS, iter->host, HOSTLEN);
@@ -233,7 +233,7 @@ refresh_list()
 }
 
 int
-clear_list()
+uilist_clear()
 {
 	int i;
 	
@@ -244,7 +244,7 @@ clear_list()
 }
 
 int
-list_headerline()
+uilist_headerline()
 {
 	int i;
 
@@ -260,29 +260,29 @@ list_headerline()
 }
 
 int 
-list_page_up()
+uilist_page_up()
 {
 	current_pw_sublist->current_item -= (LIST_LINES - 1);
 
 	if(current_pw_sublist->current_item < 1){
 		current_pw_sublist->current_item = 0;
 	}
-	refresh_list();
+	uilist_refresh();
 }
 
 int
-list_page_down()
+uilist_page_down()
 {
 	current_pw_sublist->current_item += (LIST_LINES - 1);
 
 	if(current_pw_sublist->current_item >= (lines - 1)){
 		current_pw_sublist->current_item = lines -1;
 	}
-	refresh_list();
+	uilist_refresh();
 }
 
 int
-list_up()
+uilist_up()
 {
 	if(current_pw_sublist->current_item < 1){
 		return;
@@ -290,11 +290,11 @@ list_up()
 
 	current_pw_sublist->current_item--;
 	
-	refresh_list();
+	uilist_refresh();
 }
 
 int
-list_down()
+uilist_down()
 {
 	if(current_pw_sublist->current_item >= (lines-1)){
 		return;
@@ -302,5 +302,5 @@ list_down()
 
 	current_pw_sublist->current_item++;
 
-	refresh_list();
+	uilist_refresh();
 }

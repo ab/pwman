@@ -32,7 +32,7 @@
 #include <errno.h>
 #include <pwman.h>
 
-struct pw_element {
+struct pwgen_element {
 	char	*str;
 	int	flags;
 };
@@ -46,7 +46,7 @@ struct pw_element {
 #define NOT_FIRST	0x0008
 
 
-struct pw_element elements[] = {
+struct pwgen_element elements[] = {
 	{ "a",	VOWEL },
 	{ "ae", VOWEL | DIPTHONG },
 	{ "ah",	VOWEL | DIPTHONG },
@@ -89,7 +89,7 @@ struct pw_element elements[] = {
 	{ "z",	CONSONANT }
 };
 
-#define NUM_ELEMENTS (sizeof(elements) / sizeof (struct pw_element))
+#define NUM_ELEMENTS (sizeof(elements) / sizeof (struct pwgen_element))
 
 char *pwgen(char *buf, int size)
 {
@@ -106,10 +106,10 @@ char *pwgen(char *buf, int size)
 	should_be = 0;
 	first = 1;
 
-	should_be = pw_random_number(1) ? VOWEL : CONSONANT;
+	should_be = pwgen_random_number(1) ? VOWEL : CONSONANT;
 	
 	while (c < size) {
-		i = pw_random_number(NUM_ELEMENTS);
+		i = pwgen_random_number(NUM_ELEMENTS);
 		str = elements[i].str;
 		len = strlen(str);
 		flags = elements[i].flags;
@@ -133,7 +133,7 @@ char *pwgen(char *buf, int size)
 		strcpy(buf+c, str);
 
 		/* Handle PW_ONE_CASE */
-		if ((first || flags & CONSONANT) && (pw_random_number(10) < 3)) {
+		if ((first || flags & CONSONANT) && (pwgen_random_number(10) < 3)) {
 			buf[c] = toupper(buf[c]);
 		}
 		
@@ -146,13 +146,13 @@ char *pwgen(char *buf, int size)
 		/*
 		 * Handle PW_ONE_NUMBER
 		 */
-		if (!first && (pw_random_number(10) < 3)) {
-			buf[c++] = pw_random_number(9)+'0';
+		if (!first && (pwgen_random_number(10) < 3)) {
+			buf[c++] = pwgen_random_number(9)+'0';
 			buf[c] = 0;
 				
 			first = 1;
 			prev = 0;
-			should_be = pw_random_number(1) ? VOWEL : CONSONANT;
+			should_be = pwgen_random_number(1) ? VOWEL : CONSONANT;
 			continue;
 		}
 				
@@ -164,7 +164,7 @@ char *pwgen(char *buf, int size)
 		} else { /* should_be == VOWEL */
 			if ((prev & VOWEL) ||
 			    (flags & DIPTHONG) ||
-			    (pw_random_number(10) > 3))
+			    (pwgen_random_number(10) > 3))
 				should_be = CONSONANT;
 			else
 				should_be = VOWEL;
@@ -181,7 +181,7 @@ extern double drand48();
 #endif
 
 /* Borrowed/adapted from e2fsprogs's UUID generation code */
-static int get_random_fd(void)
+static int pwgen_get_random_fd(void)
 {
 	struct timeval	tv;
 	static int	fd = -2;
@@ -215,9 +215,9 @@ static int get_random_fd(void)
  * Generate a random number n, where 0 <= n < max_num, using
  * /dev/urandom if possible.
  */
-int pw_random_number(int max_num)
+int pwgen_random_number(int max_num)
 {
-	int i, fd = get_random_fd();
+	int i, fd = pwgen_get_random_fd();
 	int lose_counter = 0, nbytes=4;
 	unsigned int rand;
 	char *cp = (char *) &rand;
@@ -254,7 +254,7 @@ char
 *pwgen_ask(char *pw)
 {
 	int i;
-	statusline_ask_num("Length of Password(default 5):\t", &i);
+	ui_statusline_ask_num("Length of Password(default 5):\t", &i);
 
 	if(i == 0){
 		i = 5;
@@ -274,5 +274,5 @@ pwgen_indep()
 	pwgen_ask(pass);
 
 	snprintf(text, STRING_LONG, "Generated Password: %s", pass);
-	statusline_msg(text);
+	ui_statusline_msg(text);
 }

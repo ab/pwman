@@ -23,7 +23,7 @@
 #include <libxml/parser.h>
 
 Options*
-new_options()
+options_new()
 {
 	Options *new;
 
@@ -33,13 +33,13 @@ new_options()
 	new->password_file = malloc(STRING_LONG);
 	new->passphrase_timeout = 180;
 
-	new->filter = new_filter();
+	new->filter = filter_new();
 
 	return new;
 }
 
 char*
-get_conf_file()
+options_get_file()
 {
 	char *conf_file;
 
@@ -55,13 +55,13 @@ get_conf_file()
 }
 
 int
-read_config()
+options_read()
 {
 	char *file, *text;
 	xmlDocPtr doc;
 	xmlNodePtr node, root;
 	
-	file = get_conf_file();
+	file = options_get_file();
 	if(file == NULL){
 		return -1;
 	}
@@ -107,7 +107,7 @@ read_config()
 }
 
 int
-write_config()
+options_write()
 {
 	char *file;
 	char text[STRING_SHORT];
@@ -117,7 +117,7 @@ write_config()
 	if(!write_options){
 		return 0;
 	}
-	file = get_conf_file();
+	file = options_get_file();
 	if(file == NULL){
 		return -1;
 	}
@@ -149,3 +149,49 @@ write_config()
 		return -1;
 	}
 }
+
+void
+options_get()
+{
+	char pw_file[STRING_LONG];
+	char text[STRING_SHORT];
+	
+	puts("Hmm... can't open ~/.pwmanrc, we'll create one manually now.");
+	
+	printf("GnuPG ID [you@yourdomain.com]: ");
+	fgets(options->gpg_id, STRING_LONG, stdin);
+	if( strcmp(options->gpg_id, "\n") == 0 ){
+		strncpy(options->gpg_id, "you@yourdomain.com", STRING_SHORT);
+	} else {
+		options->gpg_id[ strlen(options->gpg_id) - 1] = 0;
+	}
+	
+	printf("Path to GnuPG [/usr/bin/gpg]: ");
+	fgets(options->gpg_path, STRING_LONG, stdin);
+	if( strcmp(options->gpg_path, "\n") == 0){
+		strncpy(options->gpg_path, "/usr/bin/gpg", STRING_LONG);
+	} else {
+		options->gpg_path[ strlen(options->gpg_path) - 1] = 0;
+	}
+	
+	snprintf(pw_file, STRING_LONG, "%s/.pwman.db", getenv("HOME") );
+	printf("Password Database File [%s]: ", pw_file );
+	fgets(options->password_file, STRING_LONG, stdin);
+	if( strcmp(options->password_file, "\n") == 0){
+		strncpy(options->password_file, pw_file, STRING_LONG);
+	} else {
+		options->password_file[ strlen(options->password_file) - 1] = 0;
+	}
+	
+	printf("Passphrase Timeout(in minutes) [180]: ");
+	fgets(text, STRING_SHORT, stdin);
+	if( strcmp(text, "\n") == 0){
+		options->passphrase_timeout = 180;
+	} else {
+		options->passphrase_timeout = atoi(text);
+	}
+
+	write_options = TRUE;
+	options_write();
+}
+

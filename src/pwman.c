@@ -26,14 +26,14 @@
 #include <fcntl.h>
 #include <stdarg.h>
 
-static void parse_command_line(int argc, char **argv);
-static void show_usage();
-static void show_version();
-static void quit_pwman();
+static void pwman_parse_command_line(int argc, char **argv);
+static void pwman_show_usage();
+static void pwman_show_version();
+static void pwman_quit();
 
 
 static int
-check_lock_file()
+pwman_check_lock_file()
 {
 	char fn[STRING_LONG];
 	FILE *fp;
@@ -47,7 +47,7 @@ check_lock_file()
 }
 
 static int
-create_lock_file()
+pwman_create_lock_file()
 {
 	char fn[STRING_LONG];
 		
@@ -56,7 +56,7 @@ create_lock_file()
 }
 
 static int
-delete_lock_file()
+pwman_delete_lock_file()
 {
 	char fn[STRING_LONG];
 	
@@ -65,25 +65,25 @@ delete_lock_file()
 }
 
 static void
-init_pwman(int argc, char *argv[])
+pwman_init(int argc, char *argv[])
 {
 	char c;
-	signal(SIGKILL, quit_pwman);
-	signal(SIGTERM, quit_pwman);
+	signal(SIGKILL, pwman_quit);
+	signal(SIGTERM, pwman_quit);
 
 	umask(DEFAULT_UMASK);
 
 	/* get options from .pwmanrc */
-	options = new_options();
-	if(read_config() == -1){
-		get_options();
+	options = options_new();
+	if(options_read() == -1){
+		options_get();
 	}
 
 	/* parse command line options */
-	parse_command_line(argc, argv);
+	pwman_parse_command_line(argc, argv);
 
 	/* check to see if another instance of pwman is open */
-	if(check_lock_file()){
+	if(pwman_check_lock_file()){
 		fprintf(stderr, "It seems %s is already opened by an instance of pwman\n",
 				options->password_file);
 		fprintf(stderr, "Two instances of pwman should not be open the same file at the same time\n");
@@ -91,38 +91,38 @@ init_pwman(int argc, char *argv[])
 				options->password_file);
 		c = getchar();
 		if(tolower(c) == 'y'){
-			delete_lock_file();
+			pwman_delete_lock_file();
 		} else {
 			exit(-1);
 		}
 	}
 	
-	if( init_ui() ){
+	if( ui_init() ){
 		exit(1);
 	}
 
-	refresh_windows();
+	ui_refresh_windows();
 
 	/* get pw database */
-	init_database();
-	if(read_file() != 0){
-		pwlist = new_pwlist("Main");
+	pwlist_init();
+	if(pwlist_read_file() != 0){
+		pwlist = pwlist_new("Main");
 		current_pw_sublist = pwlist;
 	}
-	create_lock_file();
+	pwman_create_lock_file();
 
-	refresh_windows();
+	ui_refresh_windows();
 }
 
 static void
-quit_pwman()
+pwman_quit()
 {
-	write_file();
-	free_database();
-	delete_lock_file();
+	pwlist_write_file();
+	pwlist_free_all();
+	pwman_delete_lock_file();
 	
-	end_ui();
-	write_config();
+	ui_end();
+	options_write();
 	
 	exit(0);
 }
@@ -130,25 +130,25 @@ quit_pwman()
 int
 main(int argc, char *argv[])
 {
-	init_pwman(argc, argv);
+	pwman_init(argc, argv);
 
-	run_ui();
+	ui_run();
 
-	quit_pwman();
+	pwman_quit();
 	return 0;
 }
 
 static void
-parse_command_line(int argc, char **argv)
+pwman_parse_command_line(int argc, char **argv)
 {
 	int i;
 
 	for(i = 1; i < argc; i++){
 		if( !strcmp(argv[i], "--help") || !strcmp(argv[i], "-h") ){
-			show_usage(argv[0]);
+			pwman_show_usage(argv[0]);
 			exit(1);
 		} else if( !strcmp(argv[i], "--version") || !strcmp(argv[i], "-v") ){
-			show_version();
+			pwman_show_version();
 			exit(1);
 		} else if( !strcmp(argv[i], "--gpg-path") ){
 			write_options = FALSE;
@@ -175,7 +175,7 @@ parse_command_line(int argc, char **argv)
 }
 
 static void
-show_version()
+pwman_show_version()
 {
 	puts(PACKAGE " v " VERSION);
 	puts("Written by Ivan Kelly <ivan@ivankelly.net>\n");
@@ -196,7 +196,7 @@ show_version()
 }
 
 static void
-show_usage(char *argv_0)
+pwman_show_usage(char *argv_0)
 {
 	printf("Usage: %s [OPTIONS]...\n", argv_0);
 	puts("Store you passwords securely using public key encryption\n");

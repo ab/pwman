@@ -100,12 +100,13 @@ time_t time_base;
 
 char *trim_ws(char*);
 void debug(char*, ...);
-int init_ui();
-int run_ui();
-int end_ui();
+int ui_init();
+int ui_run();
+int ui_end();
 
-PwFilter * new_filter();
-Options * new_options();
-Pw* new_pw();
-PWList *new_pwlist(char*);
+PwFilter * filter_new();
+Options * options_new();
+
+Pw* pwlist_new_pw();
+PWList *pwlist_new(char*);
 #endif

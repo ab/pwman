@@ -78,16 +78,16 @@ typedef struct {
 	char *(*autogen)(char*);
 } InputField;
 
-int init_list();
-int free_list();
-int refresh_list();
+int uilist_init();
+int uilist_free();
+int uilist_refresh();
 
 int view_pw(int i);
 
-int statusline_yes_no(char *, int);
-int statusline_msg(char *msg);
-char * statusline_ask_str(char *, char *, int len);
-char * statusline_ask_passwd(char *, char *, int, int);
+int ui_statusline_yes_no(char *, int);
+int ui_statusline_msg(char *msg);
+char * ui_statusline_ask_str(char *, char *, int len);
+char * ui_statusline_ask_passwd(char *, char *, int, int);
 #endif
 
 
