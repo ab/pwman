@@ -116,7 +116,7 @@ init_pwman(int argc, char *argv[])
 	umask(DEFAULT_UMASK);
 
 	/* get options from .pwmanrc */
-	options = options_new();
+	options = new_options();
 	if(read_config() == -1){
 		pwman_get_options();
 	}

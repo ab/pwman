@@ -89,18 +89,25 @@ refresh_list()
 		first_list_item++;
 	}
 
-	for(iter = pwlist; (iter != NULL); iter = iter->next, i++){
-		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
-			if(lines == curitem){
-				highlight_line(num_shown);
+	for(iter = pwlist; (iter != NULL); iter = iter->next){
+		/*
+		 * if line satifies filter criteria increment i and lines
+		 */
+		if( apply_filter(iter, options->filter) ){
+			if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
+				if(lines == curitem){
+					highlight_line(num_shown);
+				}
+				mvwaddnstr(list, num_shown, NAMEPOS, iter->name, NAMELEN);
+				mvwaddnstr(list, num_shown, HOSTPOS, iter->host, HOSTLEN);
+				mvwaddnstr(list, num_shown, USERPOS, iter->user, USERLEN);
+				wstandend(list);
+				num_shown++;
 			}
-			mvwaddnstr(list, num_shown, NAMEPOS, iter->name, NAMELEN);
-			mvwaddnstr(list, num_shown, HOSTPOS, iter->host, HOSTLEN);
-			mvwaddnstr(list, num_shown, USERPOS, iter->user, USERLEN);
-			wstandend(list);
-			num_shown++;
+			i++;	
+			lines++;
 		}
-		lines++;
+		
 	}
 	wrefresh(list);
 	hide_cursor();

@@ -190,7 +190,7 @@ run_ui()
 		can_resize = FALSE;
 
 		if((last_read < (time(NULL) - (options->passphrase_timeout*60)))
-				&& options->passphrase_timeout != 0){
+				&& options->passphrase_timeout != 0 && tolower(ch) != 'q'){
 			free_database();
 			def_prog_mode();
 			end_ui();
@@ -271,6 +271,9 @@ run_ui()
 			case 0x0C:
 				refresh_windows();
 				break;
+			case '/':
+				get_filter();
+				break;
 			case 'l':
 				i = launch(curitem);
 				snprintf(msg, 80, "Application exited with code %d", i);
@@ -328,6 +331,35 @@ statusline_ask_num(char *msg, int *i)
 	noecho();
 	hide_cursor();
 
+	statusline_clear();
+}
+
+void
+statusline_ask_char(char *msg, char *c, char* valid)
+{
+	int x = strlen(msg) + 5;
+	char input[SHORT_STR];
+
+	*c = 0;
+	do {
+		statusline_clear();
+		if(*c != 0){
+			statusline_msg("Bad choice, press any key to try again");
+			getch();
+			statusline_clear();
+		}
+		statusline_msg(msg);
+
+		echo();
+		show_cursor();
+
+		*c = mvwgetch(bottom, 1, x);
+
+		noecho();
+		hide_cursor();
+		
+	} while ( !strchr(valid, *c) );
+	
 	statusline_clear();
 }
 

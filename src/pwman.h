@@ -29,10 +29,10 @@
 #define CONF_FILE 	".pwmanrc" 
 
 #define NAME_LEN	40
-#define HOST_LEN	30
-#define USER_LEN	20
-#define PASS_LEN	20
-#define LAUNCH_LEN	30
+#define HOST_LEN	40
+#define USER_LEN	40
+#define PASS_LEN	40
+#define LAUNCH_LEN	40
 
 #define SHORT_STR	20
 #define	MED_STR		30
@@ -56,10 +56,16 @@ struct _PW {
 typedef struct _PW Pw;
 
 typedef struct {
+	int field;
+	char *filter;
+} PwFilter;
+
+typedef struct {
 	char *gpg_path;
 	char *gpg_id;
 	char *password_file;
 	int passphrase_timeout;
+	PwFilter *filter;
 } Options;
 
 Options *options;
@@ -71,6 +77,7 @@ int init_ui();
 int run_ui();
 int end_ui();
 
-Options * options_new();
+PwFilter * new_filter();
+Options * new_options();
 Pw* new_pw();
 #endif

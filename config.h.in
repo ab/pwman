@@ -1,4 +1,4 @@
-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define to `unsigned' if <sys/types.h> doesn't define.  */
 #undef size_t
@@ -32,4 +32,7 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define unconditionally for setting a GNU environment. */
+#undef _GNU_SOURCE
 

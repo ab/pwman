@@ -1,5 +1,7 @@
-* make password field bigger
-
 * add password generator
 
 * search/filter function
+
+* password export/import
+
+* write before passphrase timeout

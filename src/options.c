@@ -23,7 +23,7 @@
 #include <libxml/parser.h>
 
 Options*
-options_new()
+new_options()
 {
 	Options *new;
 
@@ -32,6 +32,8 @@ options_new()
 	new->gpg_id = malloc(SHORT_STR);
 	new->password_file = malloc(LONG_STR);
 	new->passphrase_timeout = 180;
+
+	new->filter = new_filter();
 
 	return new;
 }
@@ -94,6 +96,10 @@ read_config()
 		} else if( strcmp((char*)node->name, "passphrase_timeout") == 0){
 			text = (char*)xmlNodeGetContent(node);
 			if(text){ options->passphrase_timeout = atoi(text); }
+		} else if( strcmp((char*)node->name, "filter") == 0){
+			options->filter->field = atoi( (char*)xmlGetProp(node, "field") );
+			text = (char*)xmlNodeGetContent(node);
+			if(text) strncpy(options->filter->filter, text, SHORT_STR);
 		} else {
 			fprintf(stderr, "PWM-Warning: Unrecognised xml node\n");
 		}
@@ -132,6 +138,10 @@ write_config()
 
 	snprintf(text, SHORT_STR, "%d", options->passphrase_timeout);
 	xmlNewChild(root, NULL, (xmlChar*)"passphrase_timeout", (xmlChar*)text);
+
+	snprintf(text, SHORT_STR, "%d", options->filter->field);
+	node = xmlNewChild(root, NULL, (xmlChar*)"filter", (xmlChar*)options->filter->filter);
+	xmlSetProp(node, "field", text);
 
 	xmlDocSetRootElement(doc, root);
 
