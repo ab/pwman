@@ -260,7 +260,7 @@ run_ui()
 			case 'h':
 				hide_cursor();
 				break;
-			case 's':
+				case 's':
 				show_cursor();
 				break;
 			case 'o':
@@ -341,7 +341,7 @@ void
 statusline_ask_num(char *msg, int *i)
 {
 	int x = strlen(msg) + 5;
-	char input[SHORT_STR];
+	char input[STRING_SHORT];
 
 	statusline_clear();
 	statusline_msg(msg);
@@ -349,7 +349,7 @@ statusline_ask_num(char *msg, int *i)
 	echo();
 	show_cursor();
 
-	mvwgetnstr(bottom, 1, x, input, SHORT_STR);
+	mvwgetnstr(bottom, 1, x, input, STRING_SHORT);
 	*i = atoi(input);
 	
 	noecho();
@@ -362,7 +362,7 @@ void
 statusline_ask_char(char *msg, char *c, char* valid)
 {
 	int x = strlen(msg) + 5;
-	char input[SHORT_STR];
+	char input[STRING_SHORT];
 
 	*c = 0;
 	do {
@@ -420,14 +420,14 @@ statusline_ask_str_with_autogen(char *msg, char *input, int len, char *(*autogen
 	if(input == NULL){
 		input = malloc(len);
 	}
-	text[0] = malloc(LONG_STR);
-	text[1] = malloc(LONG_STR);
+	text[0] = malloc(STRING_MEDIUM);
+	text[1] = malloc(STRING_SHORT);
 	
-	strncpy(text[1], msg, LONG_STR);
+	strncpy(text[1], msg, STRING_SHORT);
 	if(s = strrchr(text[1], ':')){
 		*s = 0;
 	}
-	snprintf(text[0], LONG_STR, "%s(%c for autogen):\t", text[1],ch);
+	snprintf(text[0], STRING_MEDIUM, "%s(%c for autogen):\t", text[1],ch);
 	x = strlen(text[0]) + 5;
 
 	statusline_clear();

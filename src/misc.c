@@ -64,38 +64,38 @@ debug(char *fmt, ... )
 void
 get_options()
 {
-	char pw_file[V_LONG_STR];
-	char text[SHORT_STR];
+	char pw_file[STRING_LONG];
+	char text[STRING_SHORT];
 	
 	puts("Hmm... can't open ~/.pwmanrc, we'll create one manually now.");
 	
 	printf("GnuPG ID [you@yourdomain.com]: ");
-	fgets(options->gpg_id, SHORT_STR, stdin);
+	fgets(options->gpg_id, STRING_LONG, stdin);
 	if( strcmp(options->gpg_id, "\n") == 0 ){
-		strncpy(options->gpg_id, "you@yourdomain.com", SHORT_STR);
+		strncpy(options->gpg_id, "you@yourdomain.com", STRING_SHORT);
 	} else {
 		options->gpg_id[ strlen(options->gpg_id) - 1] = 0;
 	}
 	
 	printf("Path to GnuPG [/usr/bin/gpg]: ");
-	fgets(options->gpg_path, V_LONG_STR, stdin);
+	fgets(options->gpg_path, STRING_LONG, stdin);
 	if( strcmp(options->gpg_path, "\n") == 0){
-		strncpy(options->gpg_path, "/usr/bin/gpg", V_LONG_STR);
+		strncpy(options->gpg_path, "/usr/bin/gpg", STRING_LONG);
 	} else {
 		options->gpg_path[ strlen(options->gpg_path) - 1] = 0;
 	}
 	
-	snprintf(pw_file, V_LONG_STR, "%s/.pwman.db", getenv("HOME") );
+	snprintf(pw_file, STRING_LONG, "%s/.pwman.db", getenv("HOME") );
 	printf("Password Database File [%s]: ", pw_file );
-	fgets(options->password_file, V_LONG_STR, stdin);
+	fgets(options->password_file, STRING_LONG, stdin);
 	if( strcmp(options->password_file, "\n") == 0){
-		strncpy(options->password_file, pw_file, V_LONG_STR);
+		strncpy(options->password_file, pw_file, STRING_LONG);
 	} else {
 		options->password_file[ strlen(options->password_file) - 1] = 0;
 	}
 	
 	printf("Passphrase Timeout(in minutes) [180]: ");
-	fgets(text, SHORT_STR, stdin);
+	fgets(text, STRING_SHORT, stdin);
 	if( strcmp(text, "\n") == 0){
 		options->passphrase_timeout = 180;
 	} else {

@@ -34,18 +34,18 @@ list_add_pw()
 {
 	Pw *pw;
 	InputField fields[] = {
-		{"Name:\t", NULL, NAME_LEN, STRING},
-		{"Host:\t", NULL, HOST_LEN, STRING},
-		{"User:\t", NULL, USER_LEN, STRING},
-		{"Password:\t", NULL, PASS_LEN, STRING, pwgen_ask},
-		{"Launch Command:\t", NULL, LAUNCH_LEN, STRING}
+		{"Name:\t", NULL, STRING_MEDIUM, STRING},
+		{"Host:\t", NULL, STRING_MEDIUM, STRING},
+		{"User:\t", NULL, STRING_MEDIUM, STRING},
+		{"Password:\t", NULL, STRING_SHORT, STRING, pwgen_ask},
+		{"Launch Command:\t", NULL, STRING_LONG, STRING}
 	};
 	int i, x;
 
 	pw = new_pw(); 
-	statusline_ask_str(fields[0].name, pw->name, NAME_LEN);
-	statusline_ask_str(fields[1].name, pw->host, HOST_LEN);
-	statusline_ask_str(fields[2].name, pw->user, USER_LEN);
+	statusline_ask_str(fields[0].name, pw->name, STRING_MEDIUM);
+	statusline_ask_str(fields[1].name, pw->host, STRING_MEDIUM);
+	statusline_ask_str(fields[2].name, pw->user, STRING_MEDIUM);
 /*
 		int x = strlen(msg) + 5;
 
@@ -63,7 +63,7 @@ list_add_pw()
 
 	statusline_clear();*/
 
-	statusline_ask_str_with_autogen(fields[3].name, pw->passwd, PASS_LEN, fields[3].autogen, 0x07);
+	statusline_ask_str_with_autogen(fields[3].name, pw->passwd, STRING_SHORT, fields[3].autogen, 0x07);
 /*	statusline_msg(fields[3].name);
 	x = strlen(fields[3].name) + 5;
 
@@ -80,7 +80,7 @@ list_add_pw()
 		statusline_clear();
 	}*/
 	
-	statusline_ask_str(fields[4].name, pw->launch, LAUNCH_LEN);
+	statusline_ask_str(fields[4].name, pw->launch, STRING_LONG);
 	
 	fields[0].value = pw->name;
 	fields[1].value = pw->host;
@@ -105,11 +105,11 @@ int
 edit_pw(Pw *pw)
 {
 	InputField fields[] = {
-		{"Name:\t", NULL, NAME_LEN, STRING},
-		{"Host:\t", NULL, HOST_LEN, STRING},
-		{"User:\t", NULL, USER_LEN, STRING},
-		{"Password:\t", NULL, PASS_LEN, STRING, pwgen_ask},
-		{"Launch Command:\t", NULL, LAUNCH_LEN, STRING}
+		{"Name:\t", NULL, STRING_MEDIUM, STRING},
+		{"Host:\t", NULL, STRING_MEDIUM, STRING},
+		{"User:\t", NULL, STRING_MEDIUM, STRING},
+		{"Password:\t", NULL, STRING_SHORT, STRING, pwgen_ask},
+		{"Launch Command:\t", NULL, STRING_LONG, STRING}
 	};
 
 	if(pw == NULL){
@@ -136,10 +136,10 @@ int
 edit_options()
 {
 	InputField fields[] = {
-		{"GnuPG Path:\t", options->gpg_path, LONG_STR, STRING},
-		{"GnuPG ID:\t", options->gpg_id, SHORT_STR, STRING},
-		{"Password File:\t", options->password_file, LONG_STR, STRING},
-		{"Passphrase Timeout(in minutes):\t", &options->passphrase_timeout, SHORT_STR, INT}
+		{"GnuPG Path:\t", options->gpg_path, STRING_LONG, STRING},
+		{"GnuPG ID:\t", options->gpg_id, STRING_LONG, STRING},
+		{"Password File:\t", options->password_file, STRING_LONG, STRING},
+		{"Passphrase Timeout(in minutes):\t", &options->passphrase_timeout, STRING_SHORT, INT}
 	};
 
 	input_dialog(fields, (sizeof(fields)/sizeof(InputField)), "Edit Preferences");
@@ -278,8 +278,8 @@ list_add_sublist()
 	char *name;
 	PWList *sublist, *iter;
 
-	name = malloc(NAME_LEN);
-	statusline_ask_str("Sublist Name:", name, NAME_LEN);
+	name = malloc(STRING_MEDIUM);
+	statusline_ask_str("Sublist Name:", name, STRING_MEDIUM);
 	for(iter = current_pw_sublist->sublists; iter != NULL; iter = iter->next){
 		if( strcmp(iter->name, name) == 0){
 			free(name);
@@ -328,13 +328,13 @@ list_delete_item()
 	Pw* curpw;
 	PWList* curpwl;
 	int i;
-	char str[V_LONG_STR];
+	char str[STRING_LONG];
 	
 	switch(get_highlighted_type()){
 		case PW_ITEM:
 			curpw = get_highlighted_item();
 			if(curpw){
-				snprintf(str, V_LONG_STR, "Really delete \"%s\"", curpw->name);
+				snprintf(str, STRING_LONG, "Really delete \"%s\"", curpw->name);
 				i = statusline_yes_no(str, 0);
 				if(i){
 					delete_pw(current_pw_sublist, curpw);
@@ -347,7 +347,7 @@ list_delete_item()
 		case PW_SUBLIST:
 			curpwl = get_highlighted_sublist();
 			if(curpwl){
-				snprintf(str, V_LONG_STR, "Really delete Sublist \"%s\"", curpwl->name);
+				snprintf(str, STRING_LONG, "Really delete Sublist \"%s\"", curpwl->name);
 				i = statusline_yes_no(str, 0);
 				if(i){
 					delete_pw_sublist(curpwl->parent, curpwl);
@@ -372,16 +372,16 @@ list_move_item()
 	Pw* curpw;
 	PWList *curpwl, *iter;
 	int i;
-	char str[V_LONG_STR];
-	char answer[LONG_STR];
+	char str[STRING_LONG];
+	char answer[STRING_MEDIUM];
 
 	switch(get_highlighted_type()){
 		case PW_ITEM:
 			curpw = get_highlighted_item();
 			if(curpw){
 				while(1){
-					snprintf(str, V_LONG_STR, "Move \"%s\" to where?", curpw->name);
-					statusline_ask_str(str, answer, LONG_STR);
+					snprintf(str, STRING_LONG, "Move \"%s\" to where?", curpw->name);
+					statusline_ask_str(str, answer, STRING_MEDIUM);
 					
 					/* if user just enters nothing do nothing */
 					if(answer[0] == 0){
@@ -405,8 +405,8 @@ list_move_item()
 			curpwl = get_highlighted_sublist();
 			if(curpwl){
 				while(1){
-					snprintf(str, V_LONG_STR, "Move sublist \"%s\" to where?", curpwl->name);
-					statusline_ask_str(str, answer, LONG_STR);
+					snprintf(str, STRING_LONG, "Move sublist \"%s\" to where?", curpwl->name);
+					statusline_ask_str(str, answer, STRING_MEDIUM);
 					
 					/* if user just enters nothing, do nothing */
 					if(answer[0] == 0){
@@ -443,8 +443,8 @@ list_move_item_up_level()
 	Pw* curpw;
 	PWList *curpwl, *iter;
 	int i;
-	char str[V_LONG_STR];
-	char answer[LONG_STR];
+	char str[STRING_LONG];
+	char answer[STRING_MEDIUM];
 
 	switch(get_highlighted_type()){
 		case PW_ITEM:
@@ -516,7 +516,7 @@ list_launch()
 {
 	int i;
 	Pw* curpw;
-	char msg[LONG_STR];
+	char msg[STRING_LONG];
 
 	switch(get_highlighted_type()){
 		case PW_ITEM:
@@ -524,7 +524,7 @@ list_launch()
 			curpw = get_highlighted_item();
 			if(curpw){
 				i = launch(curpw);
-				snprintf(msg, LONG_STR, "Application exited with code %d", i);
+				snprintf(msg, STRING_LONG, "Application exited with code %d", i);
 				statusline_msg(msg);
 			}
 			break;

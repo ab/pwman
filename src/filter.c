@@ -30,7 +30,7 @@ new_filter()
 	new = malloc(sizeof(PwFilter));
 
 	new->field = -1;
-	new->filter = malloc(SHORT_STR);
+	new->filter = malloc(STRING_MEDIUM);
 	new->filter[0] = 0;
 
 	return new;
@@ -42,9 +42,9 @@ new_filter()
 static char*
 pwstrcasestr(char *haystack, char *needle){
 #ifdef HAVE_STRCASESTR
-	return strcasestr(haystack, needle);
+	return (char*)strcasestr(haystack, needle);
 #else
-	return strstr(haystack, needle);
+	return (char*)strstr(haystack, needle);
 #endif
 }
 
@@ -115,7 +115,7 @@ get_filter()
 			return;
 			break;
 	}
-	statusline_ask_str("String to search for: ", options->filter->filter, SHORT_STR);
+	statusline_ask_str("String to search for: ", options->filter->filter, STRING_MEDIUM);
 
 	curitem = -1;
 	refresh_list();

@@ -258,8 +258,8 @@ char
 
 	if(i == 0){
 		i = 5;
-	} else if(i > PASS_LEN) {
-		i = PASS_LEN;
+	} else if(i > STRING_SHORT) {
+		i = STRING_SHORT;
 	}
 	pw = pwgen(pw, i);
 
@@ -269,10 +269,10 @@ char
 int 
 pwgen_indep()
 {
-	char pass[PASS_LEN], text[V_LONG_STR];
+	char pass[STRING_SHORT], text[STRING_LONG];
 
 	pwgen_ask(pass);
 
-	snprintf(text, V_LONG_STR, "Generated Password: %s", pass);
+	snprintf(text, STRING_LONG, "Generated Password: %s", pass);
 	statusline_msg(text);
 }

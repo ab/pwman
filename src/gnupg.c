@@ -161,7 +161,7 @@ void
 get_gnupg_id(char *id)
 {
 	while(1){
-		id = statusline_ask_str("GnuPG Recipient ID:", id, MED_STR);
+		id = statusline_ask_str("GnuPG Recipient ID:", id, STRING_LONG);
 		if(id[0] == 0){
 			return;
 		}
@@ -176,11 +176,11 @@ get_gnupg_id(char *id)
 char *
 expand_filename(char *filename)
 {
-	char *buf = malloc(V_LONG_STR);
+	char *buf = malloc(STRING_LONG);
 	
 	if((filename[0] == '~') && getenv("HOME")){
-		snprintf(buf, V_LONG_STR, "%s%s\0", getenv("HOME"), filename+1);
-		strncpy(filename, buf, V_LONG_STR);
+		snprintf(buf, STRING_LONG, "%s%s\0", getenv("HOME"), filename+1);
+		strncpy(filename, buf, STRING_LONG);
 	}
 	free(buf);
 
@@ -191,9 +191,9 @@ char *
 get_filename(char *filename, char rw)
 {
 	if(rw == 'r'){
-		filename = statusline_ask_str("File to read from:", filename, V_LONG_STR);
+		filename = statusline_ask_str("File to read from:", filename, STRING_LONG);
 	} else if(rw == 'w'){
-		filename = statusline_ask_str("File to write to:", filename, V_LONG_STR);
+		filename = statusline_ask_str("File to write to:", filename, STRING_LONG);
 	} else {
 		return;
 	}
@@ -212,7 +212,7 @@ get_passphrase()
 	passphrase_good = 0;
 
 	passphrase = statusline_ask_passwd("Enter passphrase(^G to Cancel):", passphrase, 
-			V_LONG_STR, 0x07); /* 0x07 == ^G */
+			STRING_LONG, 0x07); /* 0x07 == ^G */
 	passphrase_good = 1;
 
 	return passphrase;
@@ -232,7 +232,7 @@ check_gnupg_id(char *id)
 {	
 	regex_t reg;
 	int pid;
-	char text[V_LONG_STR], idstr[LONG_STR], *args[3];
+	char text[STRING_LONG], idstr[STRING_LONG], *args[3];
 	FILE *streams[3];
 	
 	debug("check_gnupg_id: check gnupg id");	
@@ -240,7 +240,7 @@ check_gnupg_id(char *id)
 	if( strchr(id, '%') ){ /* hmm, could be format string bug so tell fuck off */
 		return -1;
 	} else {
-		snprintf(idstr, LONG_STR, "[^<]*<%s>", id);
+		snprintf(idstr, STRING_LONG, "[^<]*<%s>", id);
 	}
 	args[0] = "gpg";
 	args[1] = "--list-keys";
@@ -248,7 +248,7 @@ check_gnupg_id(char *id)
 
 	pid = gnupg_exec(options->gpg_path, args, streams);
 
-	while( fgets(text, V_LONG_STR, streams[STDOUT]) ){
+	while( fgets(text, STRING_LONG, streams[STDOUT]) ){
 		regcomp(&reg, idstr,0);
 		if(regexec(&reg, text, 0, NULL , 0) == 0){
 			gnupg_exec_end(pid);
@@ -297,7 +297,7 @@ int
 gnupg_write(xmlDocPtr doc, char* id, char* filename)
 {
 	FILE *streams[3];
-	char cmd[V_LONG_STR], buf[V_LONG_STR];
+	char cmd[STRING_LONG], buf[STRING_LONG];
 	char *args[10];
 	char *err;
 	int pid;
@@ -343,7 +343,7 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 #endif
 		close( fileno(streams[STDIN]) );
 		
-		while( fgets(buf, V_LONG_STR - 1, streams[STDERR]) != NULL ){
+		while( fgets(buf, STRING_LONG - 1, streams[STDERR]) != NULL ){
 			err = add_to_buf(err, buf);
 		}
 		gnupg_exec_end(pid);
@@ -355,7 +355,7 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 		if( str_in_buf(err, GPG_ERR_CANTWRITE) ){
 			debug("gnupg_write: cannot write to %s", filename);
 
-			snprintf(buf, V_LONG_STR, "Cannot write to %s", filename);
+			snprintf(buf, STRING_LONG, "Cannot write to %s", filename);
 			statusline_msg(buf); getch();
 
 			filename = get_filename(filename, 'w');
@@ -376,7 +376,7 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 int
 gnupg_read(char *filename, xmlDocPtr *doc)
 {
-	char *args[9], *passphrase, *data, *err, buf[V_LONG_STR], *user;
+	char *args[9], *passphrase, *data, *err, buf[STRING_LONG], *user;
 	FILE *streams[3];
 	int pid;
 	
@@ -420,10 +420,10 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 		fclose(streams[STDIN]);
 
 		debug("gnupg_read: start reading data");
-		while( fgets(buf, V_LONG_STR - 1, streams[STDOUT]) != NULL ){
+		while( fgets(buf, STRING_LONG - 1, streams[STDOUT]) != NULL ){
 			data = add_to_buf(data, buf);
 		}
-		while( fgets(buf, V_LONG_STR - 1, streams[STDERR]) != NULL ){
+		while( fgets(buf, STRING_LONG - 1, streams[STDERR]) != NULL ){
 			err = add_to_buf(err, buf);
 		}
 	
@@ -443,14 +443,14 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 		}
 		if( str_in_buf(err, GPG_ERR_CANTOPEN) ){
 			debug("gnupg_read: cannot open %s", filename);
-			snprintf(buf, V_LONG_STR, "Cannot open file \"%s\"", filename);
+			snprintf(buf, STRING_LONG, "Cannot open file \"%s\"", filename);
 			statusline_msg(buf); getch();
 			break;
 		}
 		if( str_in_buf(err, GPG_ERR_NOSECRETKEY) ){
 			gnupg_find_recp(err, user);
 			debug("gnupg_read: bad user %s", user);
-			snprintf(buf, V_LONG_STR, "You do not have the secret key for %s", user);
+			snprintf(buf, STRING_LONG, "You do not have the secret key for %s", user);
 			statusline_msg(buf); getch();
 			break;
 		}

@@ -29,7 +29,7 @@
 #include <stdarg.h>
 
 #define CONF_FILE 	".pwmanrc" 
-
+/*
 #define NAME_LEN	40
 #define HOST_LEN	40
 #define USER_LEN	40
@@ -40,6 +40,12 @@
 #define	MED_STR		30
 #define LONG_STR	40
 #define V_LONG_STR	256
+*/
+
+/* string lengths */
+#define STRING_SHORT	64
+#define STRING_MEDIUM	128
+#define STRING_LONG	256
 
 #define MAIN_HELPLINE 	"q:quit  ?:help  a:add  e:edit  d:delete"
 

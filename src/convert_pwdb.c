@@ -83,8 +83,8 @@ new_pwlist(char *name)
 {
 	PWList *new;
 	new = malloc( sizeof(PWList) );
-	new->name = malloc(NAME_LEN);
-	strncpy(new->name, name, NAME_LEN);
+	new->name = malloc(STRING_MEDIUM);
+	strncpy(new->name, name, STRING_MEDIUM);
 	new->parent = NULL;
 	new->list = NULL;
 	new->sublists = NULL;
@@ -125,17 +125,17 @@ new_pw()
 	Pw *new;
 	new = malloc(sizeof(Pw));
 	new->id = 0;
-	new->name = malloc(NAME_LEN);
-	new->host = malloc(HOST_LEN);
-	new->user = malloc(USER_LEN);
-	new->passwd = malloc(PASS_LEN);
-	new->launch = malloc(LAUNCH_LEN);
+	new->name = malloc(STRING_MEDIUM);
+	new->host = malloc(STRING_MEDIUM);
+	new->user = malloc(STRING_MEDIUM);
+	new->passwd = malloc(STRING_SHORT);
+	new->launch = malloc(STRING_LONG);
 
-	memset(new->name, 0, NAME_LEN);
-	memset(new->host, 0, HOST_LEN);
-	memset(new->user, 0, USER_LEN);
-	memset(new->passwd, 0, PASS_LEN);
-	memset(new->launch, 0, LAUNCH_LEN);
+	memset(new->name, 0, STRING_MEDIUM);
+	memset(new->host, 0, STRING_MEDIUM);
+	memset(new->user, 0, STRING_MEDIUM);
+	memset(new->passwd, 0, STRING_SHORT);
+	memset(new->launch, 0, STRING_LONG);
 	
 	return new;
 }
@@ -252,19 +252,19 @@ read_pw_node(xmlNodePtr parent)
 			debug("read_pw_node: fucked node");
 		} else if( strcmp((char*)node->name, "name") == 0){
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(new->name, text, NAME_LEN);
+			if(text) strncpy(new->name, text, STRING_MEDIUM);
 		} else if( strcmp((char*)node->name, "user") == 0){
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(new->user, text, USER_LEN);
+			if(text) strncpy(new->user, text, STRING_MEDIUM);
 		} else if( strcmp((char*)node->name, "passwd") == 0){
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(new->passwd, text, PASS_LEN);
+			if(text) strncpy(new->passwd, text, STRING_SHORT);
 		} else if( strcmp((char*)node->name, "host") == 0){
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(new->host, text, HOST_LEN);
+			if(text) strncpy(new->host, text, STRING_MEDIUM);
 		} else if( strcmp((char*)node->name, "launch") == 0){
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(new->launch, text, LAUNCH_LEN);
+			if(text) strncpy(new->launch, text, STRING_LONG);
 		} else {
 			debug("read_pw_node: unrecognised node \"%s\"", node->name);
 		}

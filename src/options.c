@@ -28,9 +28,9 @@ new_options()
 	Options *new;
 
 	new = malloc(sizeof(Options));
-	new->gpg_id = malloc(SHORT_STR);
-	new->gpg_path = malloc(LONG_STR);
-	new->password_file = malloc(V_LONG_STR);
+	new->gpg_id = malloc(STRING_LONG);
+	new->gpg_path = malloc(STRING_LONG);
+	new->password_file = malloc(STRING_LONG);
 	new->passphrase_timeout = 180;
 
 	new->filter = new_filter();
@@ -43,12 +43,12 @@ get_conf_file()
 {
 	char *conf_file;
 
-	conf_file = malloc(V_LONG_STR);
+	conf_file = malloc(STRING_LONG);
 	
 	if(!getenv("HOME")){
 		return NULL;
 	} else {
-		snprintf(conf_file, V_LONG_STR, "%s/%s", getenv("HOME"), CONF_FILE);
+		snprintf(conf_file, STRING_LONG, "%s/%s", getenv("HOME"), CONF_FILE);
 	}
 
 	return conf_file;
@@ -83,20 +83,20 @@ read_config()
 			debug("read_config: Fucked up xml node");
 		} else if( strcmp((char*)node->name, "gpg_id") == 0){
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(options->gpg_id, text, SHORT_STR);
+			if(text) strncpy(options->gpg_id, text, STRING_LONG);
 		} else if( strcmp((char*)node->name, "gpg_path") == 0){
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(options->gpg_path, text, LONG_STR);
+			if(text) strncpy(options->gpg_path, text, STRING_LONG);
 		} else if( strcmp((char*)node->name, "password_file") == 0){
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(options->password_file, text, V_LONG_STR);
+			if(text) strncpy(options->password_file, text, STRING_LONG);
 		} else if( strcmp((char*)node->name, "passphrase_timeout") == 0){
 			text = (char*)xmlNodeGetContent(node);
 			if(text){ options->passphrase_timeout = atoi(text); }
 		} else if( strcmp((char*)node->name, "filter") == 0){
 			options->filter->field = atoi( (char*)xmlGetProp(node, "field") );
 			text = (char*)xmlNodeGetContent(node);
-			if(text) strncpy(options->filter->filter, text, SHORT_STR);
+			if(text) strncpy(options->filter->filter, text, STRING_LONG);
 		} else {
 			debug("read_config: Unrecognised xml node");
 		}
@@ -110,7 +110,7 @@ int
 write_config()
 {
 	char *file;
-	char text[SHORT_STR];
+	char text[STRING_SHORT];
 	xmlDocPtr doc;
 	xmlNodePtr node, root;
 
@@ -131,10 +131,10 @@ write_config()
 	xmlNewChild(root, NULL, (xmlChar*)"gpg_path", (xmlChar*)options->gpg_path);
 	xmlNewChild(root, NULL, (xmlChar*)"password_file", (xmlChar*)options->password_file);
 
-	snprintf(text, SHORT_STR, "%d", options->passphrase_timeout);
+	snprintf(text, STRING_SHORT, "%d", options->passphrase_timeout);
 	xmlNewChild(root, NULL, (xmlChar*)"passphrase_timeout", (xmlChar*)text);
 
-	snprintf(text, SHORT_STR, "%d", options->filter->field);
+	snprintf(text, STRING_SHORT, "%d", options->filter->field);
 	node = xmlNewChild(root, NULL, (xmlChar*)"filter", (xmlChar*)options->filter->filter);
 	xmlSetProp(node, "field", text);
 

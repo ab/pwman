@@ -35,10 +35,10 @@ static void quit_pwman();
 static int
 check_lock_file()
 {
-	char fn[V_LONG_STR];
+	char fn[STRING_LONG];
 	FILE *fp;
 	
-	snprintf(fn, V_LONG_STR, "%s.lock", options->password_file);
+	snprintf(fn, STRING_LONG, "%s.lock", options->password_file);
 	if(access(fn, F_OK) == 0){
 		return 1;
 	} else {
@@ -49,18 +49,18 @@ check_lock_file()
 static int
 create_lock_file()
 {
-	char fn[V_LONG_STR];
+	char fn[STRING_LONG];
 		
-	snprintf(fn, V_LONG_STR, "%s.lock", options->password_file);
+	snprintf(fn, STRING_LONG, "%s.lock", options->password_file);
 	creat(fn, S_IRWXU);
 }
 
 static int
 delete_lock_file()
 {
-	char fn[V_LONG_STR];
+	char fn[STRING_LONG];
 	
-	snprintf(fn, V_LONG_STR, "%s.lock", options->password_file);
+	snprintf(fn, STRING_LONG, "%s.lock", options->password_file);
 	unlink(fn);
 }
 
@@ -152,15 +152,15 @@ parse_command_line(int argc, char **argv)
 			exit(1);
 		} else if( !strcmp(argv[i], "--gpg-path") ){
 			write_options = FALSE;
-			strncpy(options->gpg_path, argv[i + 1], LONG_STR);
+			strncpy(options->gpg_path, argv[i + 1], STRING_LONG);
 			i++;
 		}else if( !strcmp(argv[i], "--gpg-id") ){
 			write_options = FALSE;
-			strncpy(options->gpg_id, argv[i + 1], SHORT_STR);
+			strncpy(options->gpg_id, argv[i + 1], STRING_LONG);
 			i++;
 		} else if( !strcmp(argv[i], "--file") || !strcmp(argv[i], "-f") ){
 			write_options = FALSE;
-			strncpy(options->password_file, argv[i + 1], V_LONG_STR);
+			strncpy(options->password_file, argv[i + 1], STRING_LONG);
 			i++;
 		} else if( !strcmp(argv[i], "--passphrase-timeout") || !strcmp(argv[i], "-t") ){
 			write_options = FALSE;
