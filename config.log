@@ -1,0 +1,32 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:564: checking for a BSD compatible install
+configure:617: checking whether build environment is sane
+configure:674: checking whether make sets ${MAKE}
+configure:720: checking for working aclocal
+configure:733: checking for working autoconf
+configure:746: checking for working automake
+configure:759: checking for working autoheader
+configure:772: checking for working makeinfo
+configure:793: checking for gcc
+configure:906: checking whether the C compiler (gcc  ) works
+configure:922: gcc -o conftest    conftest.c  1>&5
+configure:948: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:953: checking whether we are using GNU C
+configure:981: checking whether gcc accepts -g
+configure:1014: checking for strerror in -lcposix
+configure:1057: checking how to run the C preprocessor
+configure:1140: checking for unistd.h
+configure:1140: checking for locale.h
+configure:1140: checking for termios.h
+configure:1140: checking for linux/termios.h
+configure:1140: checking for sys/ioctl.h
+configure:1194: checking for initscr in -lncurses
+configure:1236: checking for ncurses.h
+configure:1324: checking for xml2-config
+configure:1359: checking for libxml - version >= 2.0.0
+configure:1461: gcc -o conftest -g -O2 -I/usr/include/libxml2/libxml -I/usr/include/libxml2   conftest.c -lxml2  -lncurses 1>&5
+configure:1555: checking for ANSI C header files
+configure:1662: checking for string.h
+configure:1701: checking for size_t

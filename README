@@ -1,0 +1,24 @@
+
+	PWMan by Ivan Kelly <ivan@ivankelly.net>
+	----------------------------------------
+
+PWMan is a password manager which uses gpg encryption to safeguard your data.
+Some code has been taken from Jaakko Heinonen's abook.
+
+COMPILATION
+
+To compile you must have ncurses installed on you system. You also need libxml.
+Usage relies on Gnu Privacy Guard.
+
+INSTALLATION
+
+Read INSTALL
+
+LICENSE
+
+All files in this distribution are released under the GNU GENERAL PUBLIC LICENSE.
+See COPYING FOR DETAILS.
+
+CONTACT AUTHOR
+
+Send bugreports, fixes, wishes etc. to Ivan Kelly <ivan@ivankelly.net>

@@ -1,0 +1,65 @@
+# Process this file with autoconf to produce a configure script.
+AC_INIT([src/ui.c])
+AM_INIT_AUTOMAKE(pwman, 0.1.2)
+AM_CONFIG_HEADER(config.h)
+
+# Checks for programs.
+AC_PROG_CC
+AC_ISC_POSIX
+
+AC_CHECK_HEADERS(unistd.h locale.h termios.h linux/termios.h sys/ioctl.h)
+
+# Checks for libraries.
+dnl -------------------
+dnl ncurses detection
+dnl -------------------
+
+curses_loc=/usr
+AC_ARG_WITH(curses, [ --with-ncurses=PATH	Where ncurses is installed ],
+        [if test $withval != yes; then
+                curses_loc=$withval
+        fi
+        if test x$curses_loc != x/usr; then
+                LDFLAGS="-L${curses_loc}/lib $LDFLAGS"
+                CPPFLAGS="$CPPFLAGS -I${curses_loc}/include"
+        fi])
+
+AC_CHECK_LIB(ncurses, initscr,
+        [LIBS="$LIBS -lncurses"
+        if test x$curses_loc = x/usr -a -d /usr/include/ncurses; then
+                CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+        fi
+        AC_CHECK_HEADERS(ncurses.h)],
+	[ echo "*************************************************************"
+	  echo "  ncurses not found. "
+	  echo "  Set path to ncurses install with --with-ncurses"
+	  echo "*************************************************************"
+	  exit])
+
+AM_PATH_XML2
+LIBS="$LIBS $XML_LIBS";
+CFLAGS="$CFLAGS $XML_CFLAGS";
+
+
+AC_SUBST(CFLAGS)
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LDFLAGS)
+
+dnl --------------------------
+dnl end of xml detection
+dnl --------------------------
+
+AC_SUBST(CFLAGS)
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LDFLAGS)
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([string.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_SIZE_T
+
+# Checks for library functions.
+
+AC_OUTPUT([Makefile src/Makefile doc/Makefile]) 

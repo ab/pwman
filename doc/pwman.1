@@ -1,0 +1,38 @@
+.TH PWMAN 1 "March 26, 2002"
+.nh
+.SH NAME
+pwman \- curses based password storage program
+.SH SYNOPSIS
+.B pwman
+[ \fB--help\fP | \fB--version\fP | \fB--gpg-path\fP <path> | \fB--gpg-id\fP <id> | \fB--file\fP <file> ] 
+.SH DESCRIPTION
+This manual page documents briefly the
+.B pwman
+program.
+.PP
+.B pwman
+is a curses based password storage application. It uses GnuPG to encrypt and decrypt the password file.
+The curses user interface was inspired by Jaako Heinonen's abook. 
+.SH OPTIONS
+.TP
+\fB\-\-help\fP
+Show usage.
+.TP
+\fB\-\-version\fP
+Show version information.
+.TP
+\fB\-\-gpg-path\fP [path]
+Specify path to GnuPG executable.
+.TP
+\fB\-\-gpg-id\fP [id]
+Specify GnuPG key to use while encrypting.
+.TP
+\fB\-\-file\fP [file]
+File to read passwords from.
+Press '\fB?\fP' during use to get a list of commands.
+.SH SEE ALSO
+.BR gpg (1),
+.br
+.SH AUTHOR
+.B pwman 
+was written by Ivan Kelly <ivan@ivankelly.net>
