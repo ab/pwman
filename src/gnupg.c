@@ -93,8 +93,13 @@ gnupg_exec(char *path, char *args[], FILE *stream[3])
 }
 
 void
-gnupg_exec_end(int pid)
+gnupg_exec_end(int pid, FILE *stream[3])
 {
+	fclose(stream[0]);
+	fclose(stream[1]);
+	fclose(stream[2]);
+
+	debug("waiting for pid %d", pid);
 	waitpid(pid, NULL, 0);
 }
 
@@ -251,12 +256,12 @@ check_gnupg_id(char *id)
 	while( fgets(text, STRING_LONG, streams[STDOUT]) ){
 		regcomp(&reg, idstr,0);
 		if(regexec(&reg, text, 0, NULL , 0) == 0){
-			gnupg_exec_end(pid);
+			gnupg_exec_end(pid, streams);
 			return 0; 
 		}
 	}
 	
-	gnupg_exec_end(pid);
+	gnupg_exec_end(pid, streams);
 
 	return -1;
 }
@@ -282,8 +287,9 @@ check_gnupg()
 	/* this might do version checking someday if needed */
 	count = fscanf(streams[STDOUT], "gpg (GnuPG) %d.%d.%d", 
 			&version[0], &version[1], &version[2]);
-	gnupg_exec_end(pid);
+	gnupg_exec_end(pid, streams);
 
+	debug("exec ended");
 	if(count != 3){
 		statusline_msg("WARNING! GnuPG Executable not found"); getch();
 		return -1;
@@ -346,7 +352,7 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 		while( fgets(buf, STRING_LONG - 1, streams[STDERR]) != NULL ){
 			err = add_to_buf(err, buf);
 		}
-		gnupg_exec_end(pid);
+		gnupg_exec_end(pid, streams);
 		
 		debug("gnupg_write: start error checking");
 		/*
@@ -427,7 +433,7 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 			err = add_to_buf(err, buf);
 		}
 	
-		gnupg_exec_end(pid);
+		gnupg_exec_end(pid, streams);
 
 		debug("gnupg_read: start error checking");
 		/*
