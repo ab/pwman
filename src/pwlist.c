@@ -23,7 +23,6 @@
 #include <unistd.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
-#include <gpgme.h>
 
 int pwindex = 0;
 extern int errno;

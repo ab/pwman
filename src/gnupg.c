@@ -34,7 +34,6 @@
 #include <sys/stat.h>
 #include <pwman.h>
 #include <ui.h>
-#include <gpgme.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <unistd.h>

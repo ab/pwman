@@ -101,7 +101,6 @@ init_pwman(int argc, char *argv[])
 		exit(1);
 	}
 
-/*	init_gpgme(); 		FUCK GPGME */
 	refresh_windows();
 
 	/* get pw database */
@@ -121,9 +120,7 @@ quit_pwman()
 	write_file();
 	free_database();
 	delete_lock_file();
-/*
-	quit_gpgme();
-*/	
+	
 	end_ui();
 	write_config();
 	
