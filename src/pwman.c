@@ -202,9 +202,9 @@ show_usage(char *argv_0)
 	puts("Store you passwords securely using public key encryption\n");
 	puts("  --help                 show usage");
 	puts("  --version              display version information");
-	puts("  --gpg-path [path]      Path to GnuPG executable");
-	puts("  --gpg-id [id]          GnuPG ID to use");
-	puts("  --file [file]          file to read passwords from");
-	puts("  --passphrase-timeout   time before app forgets passphrase\n\n");
+	puts("  --gpg-path <path>      Path to GnuPG executable");
+	puts("  --gpg-id <id>          GnuPG ID to use");
+	puts("  --file <file>          file to read passwords from");
+	puts("  --passphrase-timeout <mins>    time before app forgets passphrase(in minutes)\n\n");
 	puts("Report bugs to <ivan@ivankelly.net>");
 }
