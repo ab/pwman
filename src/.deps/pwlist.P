@@ -33,8 +33,7 @@ pwlist.o: pwlist.c pwman.h /usr/include/curses.h \
  /usr/include/libxml2/libxml/SAX.h /usr/include/sys/types.h \
  /usr/include/sys/select.h /usr/include/bits/select.h \
  /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h \
- /usr/include/alloca.h /usr/include/libxml2/libxml/xlink.h \
- /usr/include/gpgme.h
+ /usr/include/alloca.h /usr/include/libxml2/libxml/xlink.h
 pwlist.c :
 pwman.h :
 /usr/include/curses.h :
@@ -95,4 +94,3 @@ pwman.h :
 /usr/include/sys/sysmacros.h :
 /usr/include/alloca.h :
 /usr/include/libxml2/libxml/xlink.h :
-/usr/include/gpgme.h :

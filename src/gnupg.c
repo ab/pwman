@@ -46,7 +46,6 @@
 #define STDIN 1
 #define STDERR 2
 
-GpgmeCtx ctx;
 int passphrase_good = 0;
 extern int errno;
 
