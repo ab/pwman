@@ -20,6 +20,7 @@
 
 #include <pwman.h>
 #include <errno.h>
+#include <unistd.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
@@ -204,6 +205,21 @@ check_file()
 	}
 }
 
+static void
+check_gnupg()
+{
+	while(1){
+		if(access(options->gpg_path, F_OK) != 0){
+			fprintf(stderr, "GnuPG not found at \"%s\"\n", options->gpg_path);
+			fprintf(stderr, "Please enter new path:\t");
+			fgets(options->gpg_path, LONG_STR, stdin);
+			options->gpg_path[ strlen(options->gpg_path) - 1] = 0;
+		} else {
+			break;
+		}
+	}
+}
+
 int
 write_file()
 {
@@ -214,6 +230,7 @@ write_file()
 	FILE *fp;
 
 	check_gnupg_id();
+	check_gnupg();
 	check_file();
 
 	if(!options->password_file){
@@ -295,10 +312,11 @@ int
 read_file()
 {
 	char *buf, *cmd, *s, *text;
-	int i;
 	FILE *fp;
 	xmlNodePtr node, root;
 	xmlDocPtr doc;
+
+	check_gnupg();
 
 	buf = malloc(1); buf[0] = 0;
 	s = malloc(V_LONG_STR);
@@ -308,13 +326,8 @@ read_file()
 	while( fgets(s, V_LONG_STR, fp) ){
 		buf = store_in_buffer(buf, s);
 	}
-	i = pclose(fp);
+	pclose(fp);
 
-	if(i == 32512){
-		fputs("GnuPG not found\n", stderr);
-		exit(-1);
-	}
-	
 	free(s);
 	free(cmd);
 	cmd = s = NULL;
