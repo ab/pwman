@@ -248,7 +248,7 @@ check_gnupg_id(char *id)
 
 	pid = gnupg_exec(options->gpg_path, args, streams);
 
-	while( fgets(text, 80, streams[STDOUT]) ){
+	while( fgets(text, V_LONG_STR, streams[STDOUT]) ){
 		regcomp(&reg, idstr,0);
 		if(regexec(&reg, text, 0, NULL , 0) == 0){
 			gnupg_exec_end(pid);
