@@ -221,6 +221,7 @@ run_ui()
 				break;
 			case 'a':
 				add_pw_ui();
+				write_file();
 				break;
 			case 'e':
 			case ' ':
@@ -261,7 +262,6 @@ run_ui()
 				break;
 			case '/':
 				get_filter();
-				curitem = 1;
 				break;
 			case 'E':
 				current_item = get_current_item();
@@ -272,7 +272,8 @@ run_ui()
 				refresh_list();
 				break;
 			case 'l':
-				i = launch(curitem);
+				current_item = get_current_item();
+				i = launch(current_item);
 				snprintf(msg, 80, "Application exited with code %d", i);
 				statusline_msg(msg);
 				break;

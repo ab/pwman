@@ -88,15 +88,12 @@ execute(char *cmd) {
 }
 
 int
-launch(int i)
+launch(Pw *pw)
 {
-	Pw *pw;
+	int i;
 	char *cmd;
 	char **cmd_array;
 	
-	for(pw = pwlist; (i > 0 ) && (pw != NULL); i--, pw = pw->next){}
-	if(pw == NULL){ return -1; }
-
 	cmd = find_replace(pw->launch, "%h", pw->host);
 	cmd = find_replace(cmd, "%u", pw->user);
 	cmd = find_replace(cmd, "%p", pw->passwd);
