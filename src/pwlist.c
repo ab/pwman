@@ -131,17 +131,6 @@ add_pw_ptr(Pw *new)
 	return 0;
 }
 
-/*
- * int
-edit_pw(int id)
-{
-	Pw *iter;
-
-	for(iter = pwlist; iter != NULL; iter = iter->next){};
-
-	iter = edit_pw_func(iter);
-}*/
-
 int 
 delete_pw(Pw *pw)
 {
@@ -310,7 +299,7 @@ read_file()
 	FILE *fp;
 	xmlNodePtr node, root;
 	xmlDocPtr doc;
-	
+
 	buf = malloc(1); buf[0] = 0;
 	s = malloc(V_LONG_STR);
 	cmd = malloc(V_LONG_STR);

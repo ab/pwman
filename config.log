@@ -1,32 +1,43 @@
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
 
-configure:564: checking for a BSD compatible install
-configure:617: checking whether build environment is sane
-configure:674: checking whether make sets ${MAKE}
-configure:720: checking for working aclocal
-configure:733: checking for working autoconf
-configure:746: checking for working automake
-configure:759: checking for working autoheader
-configure:772: checking for working makeinfo
-configure:793: checking for gcc
-configure:906: checking whether the C compiler (gcc  ) works
-configure:922: gcc -o conftest    conftest.c  1>&5
-configure:948: checking whether the C compiler (gcc  ) is a cross-compiler
-configure:953: checking whether we are using GNU C
-configure:981: checking whether gcc accepts -g
-configure:1014: checking for strerror in -lcposix
-configure:1057: checking how to run the C preprocessor
-configure:1140: checking for unistd.h
-configure:1140: checking for locale.h
-configure:1140: checking for termios.h
-configure:1140: checking for linux/termios.h
-configure:1140: checking for sys/ioctl.h
-configure:1194: checking for initscr in -lcurses
-configure:1236: checking for ncurses.h
-configure:1326: checking for xml2-config
-configure:1361: checking for libxml - version >= 2.0.0
-configure:1463: gcc -o conftest -g -O2 -I/usr/local/include/libxml -I/usr/local/include   conftest.c -L/usr/local/lib -lxml2 -lz -lm  -lcurses 1>&5
-configure:1557: checking for ANSI C header files
-configure:1664: checking for string.h
-configure:1703: checking for size_t
+configure:560: checking for a BSD compatible install
+configure:613: checking whether build environment is sane
+configure:670: checking whether make sets ${MAKE}
+configure:716: checking for working aclocal
+configure:729: checking for working autoconf
+configure:742: checking for working automake
+configure:755: checking for working autoheader
+configure:768: checking for working makeinfo
+configure:789: checking for gcc
+configure:902: checking whether the C compiler (gcc  ) works
+configure:918: gcc -o conftest    conftest.c  1>&5
+configure:944: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:949: checking whether we are using GNU C
+configure:977: checking whether gcc accepts -g
+configure:1010: checking for strerror in -lcposix
+configure:1053: checking how to run the C preprocessor
+configure:1136: checking for unistd.h
+configure:1136: checking for locale.h
+configure:1136: checking for termios.h
+configure:1136: checking for linux/termios.h
+configure:1136: checking for sys/ioctl.h
+configure:1190: checking for initscr in -lcurses
+configure:1232: checking for ncurses.h
+configure:1296: checking for xml2-config
+configure:1331: checking for xmlNewDowc in -lxml2
+configure:1350: gcc -o conftest -g -O2   conftest.c -lxml2   -lcurses 1>&5
+/tmp/cccHsEfS.o: In function `main':
+/home/ivan/src/home/pwman/configure:1346: undefined reference to `xmlNewDowc'
+collect2: ld returned 1 exit status
+configure: failed program was:
+#line 1339 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char xmlNewDowc();
+
+int main() {
+xmlNewDowc()
+; return 0; }

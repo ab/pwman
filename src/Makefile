@@ -1,5 +1,5 @@
 # Generated automatically from Makefile.in by configure.
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -58,16 +58,13 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = gcc
-CFLAGS = -g -O2 -I/usr/local/include/libxml -I/usr/local/include
+CFLAGS = -g -O2 -I/usr/include/libxml2/libxml -I/usr/include/libxml2
 CPPFLAGS = 
 LDFLAGS = 
 MAKEINFO = makeinfo
 PACKAGE = pwman
 VERSION = 0.1.2
-XML2_CONFIG = /usr/local/bin/xml2-config
-XML_CFLAGS = -I/usr/local/include/libxml -I/usr/local/include
-XML_CONFIG = @XML_CONFIG@
-XML_LIBS = -L/usr/local/lib -lxml2 -lz -lm
+XML2_CONFIG = /usr/bin/xml2-config
 
 INCLUDES = -I$(top_srcdir) -I$(includedir) 	  -DG_LOG_DOMAIN=\"pwman\" 
 
@@ -83,7 +80,7 @@ PROGRAMS =  $(bin_PROGRAMS)
 
 
 DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
-LIBS =  -lcurses -L/usr/local/lib -lxml2 -lz -lm
+LIBS = -lxml2  -lcurses -lxml2
 pwman_OBJECTS =  options.o pwlist.o ui.o uilist.o pwman.o actions.o \
 launch.o
 pwman_LDADD = $(LDADD)

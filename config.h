@@ -8,7 +8,7 @@
 #define STDC_HEADERS 1
 
 /* Define if you have the <linux/termios.h> header file.  */
-/* #undef HAVE_LINUX_TERMIOS_H */
+#define HAVE_LINUX_TERMIOS_H 1
 
 /* Define if you have the <locale.h> header file.  */
 #define HAVE_LOCALE_H 1

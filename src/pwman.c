@@ -20,11 +20,47 @@
 
 #include "pwman.h"
 #include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 static void parse_command_line(int argc, char **argv);
 static void show_usage();
 static void show_version();
 static void quit_pwman();
+
+static int
+check_lock_file()
+{
+	char fn[V_LONG_STR];
+	FILE *fp;
+	
+	snprintf(fn, V_LONG_STR, "%s.lock", options->password_file);
+	if(access(fn, F_OK) == 0){
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+static int
+create_lock_file()
+{
+	char fn[V_LONG_STR];
+		
+	snprintf(fn, V_LONG_STR, "%s.lock", options->password_file);
+	creat(fn, S_IRWXU);
+}
+
+static int
+delete_lock_file()
+{
+	char fn[V_LONG_STR];
+	
+	snprintf(fn, V_LONG_STR, "/tmp/%s.lock", options->password_file);
+	unlink(fn);
+}
 
 static void
 pwman_get_options()
@@ -88,9 +124,20 @@ init_pwman(int argc, char *argv[])
 	/* parse command line options */
 	parse_command_line(argc, argv);
 
+	/* check to see if another instance of pwman is open */
+	if(check_lock_file()){
+		fprintf(stderr, "It seems another %s is already opened by an instance of pwman\n",
+				options->password_file);
+		fprintf(stderr, "Two instances of pwman cannot open the same file at the same time\n");
+		fprintf(stderr, "If you do not have another instance of pwman open delete the file %s.lock\n",
+				options->password_file);
+		exit(-1);
+	}
+	
 	/* get pw database */
 	init_database();
 	read_file();
+	create_lock_file();
 
 	if( init_ui() ){
 		exit(1);
@@ -107,7 +154,8 @@ quit_pwman()
 
 	write_file();
 	free_database();
-
+	delete_lock_file();
+	
 	write_config();
 
 	exit(0);
