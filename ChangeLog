@@ -1,27 +1,37 @@
-0.2.1
-2002-5-1 - Bugfixes on filter
-2002-5-1 - Fixed launch command with filters
-2002-5-1 - Added a file write after each add so that data isn't lost if pwman
-isn't shut down right
+0.3.1	Ivan Kelly	<ivan@ivankelly.net>
+	* pwman.1: updated man page
+	* gnupg.c: large rewrite, switched back from gpgme to using gpg with pipes
+	* pwlist.c/actions.c/uilist.c: added sublist functionallity
+	* pwlist.c: new format due to addition of sublists
+	* convert_pwdb.c: separate executable for converting old database
+	* pwdb2csv.c: separate executable to convert a database to a csv file
+	* misc.c: added file misc.c and move some misc functions to it
+	* *.c: other small changes
+	
+0.2.1	Ivan Kelly 	<ivan@ivankelly.net>
+	* filter.c: Bugfixes on filter
+	* launch.c: Fixed launch command with filters
+	* pwlist.c: Added a file write after each add so that data isn't lost if pwman
+	  isn't shut down right
 
-0.2.0
-2002-4-13 - Added search/filtering function
-2002-4-13 - Switched from using gpg to gpgme
-2002-4-14 - Added password generator
-2002-4-14 - Rewrote most of password file I/O
-2002-4-14 - Added Import/Export functions
-2002-4-14 - Got rid of incessant blinking/flashing on scroll
-2002-4-14 - Shadowed passphrase and timeout improvements
+0.2.0	Ivan Kelly	<ivan@ivankelly.net>
+	* filter.c: Added search/filtering function
+	* gnupg.c: Switched from using gpg to gpgme
+	* pwgen.c: Added password generator
+	* pwlist.c: Rewrote most of password file I/O
+	* import_export.c: Added Import/Export functions
+	* uilist.c: Got rid of incessant blinking/flashing on scroll
+	* ui.c/pwman.c/gnupg.c: Shadowed passphrase and timeout improvements
 
-0.1.2
-2002-4-5  - Switched from libxml to libxml2
-2002-4-5  - Added a passphrase timeout option
-2002-4-6  - Changed configure.in so that it now builds on openbsd
-2002-4-6  - Added lock files on the password files
-2002-4-6  - Now Building on MacOSX10.1, FreeBSD 4.5 & Solaris 8 also
+0.1.2	Ivan Kelly 	<ivan@ivankelly.net>
+	* options.c/pwlist.c: Switched from libxml to libxml2
+	* gnupg.c: Added a passphrase timeout option
+	* configure.in: Changed configure.in so that it now builds on openbsd
+	* pwman.c Added lock files on the password files
+	* *: Now Building on MacOSX10.1, FreeBSD 4.5 & Solaris 8 also
 
-0.1.1
-2002-3-30 - Few bug fixes and error handling. Code clean up.
+0.1.1	Ivan Kelly	<ivan@ivankelly.net>
+	* *.c: Few bug fixes and error handling. Code clean up.
 
-0.1.0
-2002-3-27 - Initial release
+0.1.0 	Ivan Kelly	<ivan@ivankelly.net>
+	* pwman: Initial release

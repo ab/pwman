@@ -4,7 +4,7 @@
 pwman \- curses based password storage program
 .SH SYNOPSIS
 .B pwman
-[ \fB--help\fP | \fB--version\fP | \fB--gpg-path <path>\fP | \fB--gpg-id\fP <id> | \fB--file\fP <file> ] 
+[ \fB--help\fP | \fB--version\fP | \fB--gpg-path <path>\fP | \fB--gpg-id\fP <id> | \fB--file\fP <file> | \fB--passphrase-timeout <time in minutes> ] 
 .SH DESCRIPTION
 This manual page documents briefly the
 .B pwman
@@ -21,11 +21,18 @@ Show usage.
 \fB\-\-version\fP
 Show version information.
 .TP
-\fB\-\-gpg-id\fP [id]
+\fB\-\-gpg-path\fP <path>
+Specify path to GnuPG Executable.
+.TP
+\fB\-\-gpg-id\fP <id>
 Specify GnuPG key to use while encrypting.
 .TP
-\fB\-\-file\fP [file]
+\fB\-\-file\fP <file>
 File to read passwords from.
+.TP
+\fB\-\-passphrase-timeout\fP <time in minutes>
+Time before passphrase times out.
+
 Press '\fB?\fP' during use to get a list of commands.
 .SH SEE ALSO
 .BR gpg (1),
