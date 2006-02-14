@@ -182,16 +182,39 @@ gnupg_check_id(char *id)
 {	
 	regex_t reg;
 	int pid;
-	char text[STRING_LONG], idstr[STRING_LONG], *args[3];
+	char text[STRING_LONG], idstr[STRING_LONG], keyid[STRING_LONG], *args[3];
 	FILE *streams[3];
+	int id_is_key_id = 0;
 	
-	debug("check_gnupg_id: check gnupg id");	
+	debug("check_gnupg_id: check gnupg id\n");
 
-	if( strchr(id, '%') ){ /* hmm, could be format string bug so tell fuck off */
+	// Check we're given nice input
+	if( strchr(id, '%') ){ 
+		/* hmm, could be format string bug so tell get lost */
 		return -1;
+	}
+
+	// Is the supplied ID really a key ID?
+	// (If it is, it's 8 chars long, and 0-9A-F)
+	snprintf(keyid, STRING_LONG, "^[0-9A-Z]{8}$");
+	regcomp(&reg, keyid,REG_EXTENDED);
+	if(regexec(&reg, id, 0, NULL , 0) == 0) {
+		// The supplied ID is a key ID
+		id_is_key_id = 1;
+		debug("check_gnupg_id: supplied ID was a gnupg key id\n");
 	} else {
+		debug("check_gnupg_id: supplied ID taken to be an email address\n");
+	}
+
+	if(id_is_key_id == 1) {
+		// Match on "pub   SIZETYPE/KEYID DATE-DATE-DATE"
+		snprintf(idstr, STRING_LONG, "^pub[ \t]+[0-9]+[a-zA-Z]/%s[ \t]", id);
+	} else {
+		// Match on "uid       NAME <EMAIL ADDRESS>"
 		snprintf(idstr, STRING_LONG, "[^<]*<%s>", id);
 	}
+
+	// Fire off GPG to find all our keys
 	args[0] = "gpg";
 	args[1] = "--list-keys";
 	args[2] = NULL;
@@ -199,7 +222,7 @@ gnupg_check_id(char *id)
 	pid = gnupg_exec(options->gpg_path, args, streams);
 
 	while( fgets(text, STRING_LONG, streams[STDOUT]) ){
-		regcomp(&reg, idstr,0);
+		regcomp(&reg, idstr, REG_EXTENDED);
 		if(regexec(&reg, text, 0, NULL , 0) == 0){
 			gnupg_exec_end(pid, streams);
 			return 0; 
