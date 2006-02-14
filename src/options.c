@@ -161,7 +161,7 @@ options_get()
 	
 	puts("Hmm... can't open ~/.pwmanrc, we'll create one manually now.");
 	
-	printf("GnuPG ID [you@yourdomain.com]: ");
+	printf("GnuPG ID [you@yourdomain.com] or [012345AB]: ");
 	fgets(options->gpg_id, STRING_LONG, stdin);
 	if( strcmp(options->gpg_id, "\n") == 0 ){
 		strncpy(options->gpg_id, "you@yourdomain.com", STRING_SHORT);
