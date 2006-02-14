@@ -1,3 +1,11 @@
+0.3.4   Nick Burch <gagravarr@users.sourceforge.net>
+    * *.c: implement read only patch from Jon
+    * pwlist.c: XML escape data, so strings with a & in them don't break
+
+0.3.3   Ivan Kelly  <ivan@ivankelly.net>
+    * *.c: renamed a few functions to make it clearer where they're from
+    * uilist.c: fix for cursor going off the screen
+
 0.3.1	Ivan Kelly	<ivan@ivankelly.net>
 	* pwman.1: updated man page
 	* gnupg.c: large rewrite, switched back from gpgme to using gpg with pipes
