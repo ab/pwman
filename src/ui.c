@@ -341,8 +341,8 @@ ui_run()
 				debug_i++;
 				snprintf(msg, 80, "Name %d", debug_i);
 					
-				pwlist_add_pw(current_pw_sublist, msg, "myhost", "myuser", "mypasswd", "mylaucnh");
-				refresh_list();
+				pwlist_add(current_pw_sublist, msg, "myhost", "myuser", "mypasswd", "mylaucnh");
+				uilist_refresh();
 				break;
 #endif
 			default:
