@@ -48,6 +48,7 @@
 #define STRING_LONG	256
 
 #define MAIN_HELPLINE 	"q:quit  ?:help  a:add  e:edit  d:delete"
+#define READONLY_MSG	"RO"
 
 #define DEFAULT_UMASK 066
 
@@ -90,6 +91,7 @@ typedef struct {
 	char *password_file;
 	int passphrase_timeout;
 	PwFilter *filter;
+	int readonly;
 } Options;
 
 Options *options;

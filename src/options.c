@@ -32,6 +32,7 @@ options_new()
 	new->gpg_path = malloc(STRING_LONG);
 	new->password_file = malloc(STRING_LONG);
 	new->passphrase_timeout = 180;
+	new->readonly = FALSE;
 
 	new->filter = filter_new();
 
@@ -97,6 +98,8 @@ options_read()
 			options->filter->field = atoi( (char*)xmlGetProp(node, "field") );
 			text = (char*)xmlNodeGetContent(node);
 			if(text) strncpy(options->filter->filter, text, STRING_LONG);
+		} else if( strcmp((char*)node->name, "readonly") == 0){
+			options->readonly = TRUE;
 		} else {
 			debug("read_config: Unrecognised xml node");
 		}

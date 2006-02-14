@@ -167,6 +167,7 @@ uilist_refresh()
 
 	uilist_headerline();
 
+	// Ensure we don't end up off the screen
 	if(current_pw_sublist->current_item < 0){
 		current_pw_sublist->current_item = 0;
 	}
@@ -226,6 +227,7 @@ uilist_refresh()
 		}
 		
 	}
+
 	wrefresh(list);
 	hide_cursor();
 

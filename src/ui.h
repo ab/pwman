@@ -88,6 +88,7 @@ int ui_statusline_yes_no(char *, int);
 int ui_statusline_msg(char *msg);
 char * ui_statusline_ask_str(char *, char *, int len);
 char * ui_statusline_ask_passwd(char *, char *, int, int);
+void statusline_readonly();
 #endif
 
 

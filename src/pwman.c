@@ -83,17 +83,24 @@ pwman_init(int argc, char *argv[])
 	pwman_parse_command_line(argc, argv);
 
 	/* check to see if another instance of pwman is open */
-	if(pwman_check_lock_file()){
+	if(!options->readonly && pwman_check_lock_file()){
 		fprintf(stderr, "It seems %s is already opened by an instance of pwman\n",
 				options->password_file);
 		fprintf(stderr, "Two instances of pwman should not be open the same file at the same time\n");
-		fprintf(stderr, "If you are sure pwman is not already open you can delete the file. Delete file %s.lock? [y/n]\n",
+		fprintf(stderr, "If you are sure pwman is not already open you can delete the file.\n");
+		fprintf(stderr,"Alternatively, you can open the file readonly by answering 'r'\n");
+		fprintf(stderr,"Delete file %s.lock? [y/n/r]\n",
 				options->password_file);
 		c = getchar();
-		if(tolower(c) == 'y'){
-			pwman_delete_lock_file();
-		} else {
-			exit(-1);
+		switch (tolower(c)) {
+			case 'y':
+				pwman_delete_lock_file();
+				break;
+			case 'r':
+				options->readonly = TRUE;
+				break;
+			default:
+				exit(-1);
 		}
 	}
 	
@@ -109,7 +116,9 @@ pwman_init(int argc, char *argv[])
 		pwlist = pwlist_new("Main");
 		current_pw_sublist = pwlist;
 	}
-	pwman_create_lock_file();
+	if (!options->readonly){
+		pwman_create_lock_file();
+	}
 
 	ui_refresh_windows();
 }
@@ -166,6 +175,9 @@ pwman_parse_command_line(int argc, char **argv)
 			write_options = FALSE;
 			options->passphrase_timeout = atoi(argv[i + 1]);
 			i++;
+		} else if ( !strcmp(argv[i], "--readonly") || !strcmp(argv[i], "-r") ){
+			write_options = FALSE;
+			options->readonly = TRUE;
 		} else {
 			printf("option %s not recognised\n", argv[i]);
 			printf("try %s --help for more info\n", argv[0]);
@@ -205,6 +217,7 @@ pwman_show_usage(char *argv_0)
 	puts("  --gpg-path <path>      Path to GnuPG executable");
 	puts("  --gpg-id <id>          GnuPG ID to use");
 	puts("  --file <file>          file to read passwords from");
-	puts("  --passphrase-timeout <mins>    time before app forgets passphrase(in minutes)\n\n");
+	puts("  --passphrase-timeout <mins>    time before app forgets passphrase(in minutes)");
+	puts("  --readonly             open the database readonly\n\n");
 	puts("Report bugs to <ivan@ivankelly.net>");
 }

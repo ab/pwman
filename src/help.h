@@ -28,6 +28,7 @@ static char *help[] = {
 	"\n",
 	"	arrows / j,k	scroll list\n",
 	"	enter/space/e	view/edit item\n",
+	"   U		move up a level\n",
 	"	a		add item\n",
 	"	d/del		delete item\n",
 	"	A		add sublist\n",

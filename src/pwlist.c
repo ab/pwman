@@ -308,6 +308,10 @@ pwlist_write_file()
 	xmlDocPtr doc;
 	xmlNodePtr root;
 
+	if(options->readonly){
+		return 0;
+	}
+
 	if(!pwlist){
 		debug("write_file: bad password file");
 		ui_statusline_msg("Bad password list");

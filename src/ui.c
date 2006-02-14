@@ -39,7 +39,13 @@ ui_draw_top()
 {
 	werase(top);
 	mvwhline(top, 1, 0, ACS_HLINE, COLS);
-	mvwprintw(top, 0, 0, "%s | %s", PACKAGE " " VERSION, MAIN_HELPLINE);
+	if( !options->readonly) {
+		mvwprintw(top, 0, 0, "%s | %s", PACKAGE " " VERSION,
+			  MAIN_HELPLINE);
+	} else {
+		mvwprintw(top, 0, 0, "%s | %s | %s", PACKAGE " " VERSION,
+			  READONLY_MSG, MAIN_HELPLINE);
+	}
 	
 	wrefresh(top);
 }
@@ -231,14 +237,22 @@ ui_run()
 				uilist_down();
 				break;
 			case 'A':
-				action_list_add_sublist();
+				if (!options->readonly){
+					action_list_add_sublist();
+				} else {
+					statusline_readonly();
+				}
 				break;
 			case 'U':
 				action_list_up_one_level();
 				break;
 			case 'a':
-				action_list_add_pw();
-				pwlist_write_file();
+				if (!options->readonly){
+					action_list_add_pw();
+					pwlist_write_file();
+				} else {
+					statusline_readonly();
+				}
 				break;
 			case 'e':
 			case ' ':
@@ -251,13 +265,25 @@ ui_run()
 				break;
 			case 'd':
 			case 0x14A: /* DEL key */
-				action_list_delete_item();
+				if (!options->readonly){
+					action_list_delete_item();
+				} else {
+					statusline_readonly();
+				}
 				break;
 			case 'm':
-				action_list_move_item();
+				if (!options->readonly){
+					action_list_move_item();
+				} else {
+					statusline_readonly();
+				}
 				break;
 			case 'M':
-				action_list_move_item_up_level();
+				if (!options->readonly){
+					action_list_move_item_up_level();
+				} else {
+					statusline_readonly();
+				}
 				break;
 			case 'h':
 				hide_cursor();
@@ -269,7 +295,11 @@ ui_run()
 				action_edit_options();
 				break;
 			case 0x17: /* control-w */
-				pwlist_write_file();
+				if (!options->readonly){
+					pwlist_write_file();
+				} else {
+					statusline_readonly();
+				}
 				break;
 			case 0x12: /* control-r */
 				action_list_read_file();
@@ -290,8 +320,12 @@ ui_run()
 				action_list_export();
 				break;
 			case 'I':
-				pwlist_import_passwd();
-				uilist_refresh();
+				if (!options->readonly){
+					pwlist_import_passwd();
+					uilist_refresh();
+				} else {
+					statusline_readonly();
+				}
 				break;
 			case 'l':
 				action_list_launch();
@@ -564,6 +598,12 @@ ui_statusline_yes_no(char *msg, int def)
 	ui_statusline_clear();
 
 	return ret;
+}
+
+void
+statusline_readonly()
+{
+	ui_statusline_msg("Password file is opened readonly");
 }
 
 int 
