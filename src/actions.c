@@ -250,6 +250,57 @@ action_input_dialog(InputField *fields, int num_fields, char *title)
 }
 
 int 
+action_input_gpgid_dialog(InputField *fields, int num_fields, char *title)
+{
+	int ch, i, valid_id;
+	char *ret;
+	WINDOW *dialog_win;
+	char msg[] = "(press 'q' when export recipient list is complete)";
+	char msg2[80];
+	/*
+	 * initialize the info window
+	 */
+	disp_h = ((num_fields+2) * 2) + 3;
+	dialog_win = newwin(disp_h, disp_w, (LINES - disp_h)/2, (COLS - disp_w)/2);
+	keypad(dialog_win, TRUE);
+
+	action_input_dialog_draw_items(dialog_win, fields, num_fields, title, msg);
+
+	/*
+	 * actions loop - ignore read only as not changing main state
+	 */
+	while((ch = wgetch(dialog_win)) != 'q'){
+		if( (ch >= '1') && (ch <= NUM_TO_CHAR(num_fields)) ){
+			i = CHAR_TO_NUM(ch);
+			fields[i].value = (void*)ui_statusline_ask_str(fields[i].name, 
+								(char*)fields[i].value, fields[i].max_length);
+			
+			// Now verify it's a valid recipient
+			if(strlen(fields[i].value)) {
+				valid_id = gnupg_check_id(fields[i].value);
+				if(valid_id == 0) {
+					// Good, valid id
+				} else {
+					// Invalid id. Warn and blank
+					snprintf(msg2, 80, "Invalid recipient '%s'", fields[i].value);
+					ui_statusline_msg(msg2);
+					snprintf(fields[i].value, STRING_LONG, "");
+				}
+
+				// Redraw display
+				action_input_dialog_draw_items(dialog_win, fields, num_fields, title, msg);
+			}
+		}
+	}
+
+	/*
+	 * clean up
+	 */
+	delwin(dialog_win);
+	uilist_refresh();
+}
+
+int 
 action_yes_no_dialog(InputField *fields, int num_fields, char *title, char *question)
 {
 	int ch, i;

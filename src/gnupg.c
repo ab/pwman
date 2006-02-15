@@ -177,7 +177,7 @@ gnupg_find_recp(char *str, char *user)
 	strncpy(user, str+i[0], i[2]);
 }
 
-static int
+int
 gnupg_check_id(char *id)
 {	
 	regex_t reg;
@@ -234,6 +234,9 @@ gnupg_check_id(char *id)
 	return -1;
 }
 
+/**
+ * Get a single GnuPG Recipient ID
+ */
 void
 gnupg_get_id(char *id)
 {
@@ -248,6 +251,32 @@ gnupg_get_id(char *id)
 		debug("get_gnupg_id: if here is reached id is bad");
 		ui_statusline_msg("Bad Recipient, Try again"); getch();
 	}
+}
+
+/**
+ * Get multiple GnuPG Recipient IDs
+ */
+void
+gnupg_get_ids(char **ids, int max_id_num)
+{
+	InputField fields[max_id_num];
+	char names[max_id_num][STRING_LONG];
+	int i;
+
+	for(i=0; i<max_id_num; i++) {
+		fields[i].name = names[i]; // Needs a local string to write into
+		snprintf(fields[i].name, STRING_LONG, "Recipient %d: ", (i+1));
+		fields[i].value = ids[i]; // String to write into comes from caller
+		fields[i].max_length = STRING_LONG;
+		fields[i].type = STRING;
+	}
+
+	// Ask for the first recipient
+	ui_statusline_ask_str(fields[0].name, ids[0], STRING_LONG);
+
+	// Prompt to edit the others
+	// This will verify the IDs for us
+	action_input_gpgid_dialog(fields, max_id_num, "Edit Recipients");
 }
 
 char *
