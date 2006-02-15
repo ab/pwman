@@ -1,3 +1,8 @@
+0.3.5   Nick Burch <gagravarr@users.sourceforge.net>
+    * gnupg.c: add support for encrypting data to multiple recipients
+    * gnupg.c/actions.c/pwlist.c: make the export of passwords and lists
+      handle multiple recipients
+
 0.3.4   Nick Burch <gagravarr@users.sourceforge.net>
     * *.c: implement read only patch from Jon
     * pwlist.c: XML escape data, so strings with a & in them don't break
