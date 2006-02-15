@@ -511,7 +511,7 @@ pwlist_export(PWList *pwlist)
 {
 	char vers[5];
 	char id[STRING_LONG], file[STRING_LONG];
-	int max_id_num = 5, i=0;
+	int max_id_num = 5, i=0, valid_ids = 0;
 	char **ids; // max_id_num by STRING_LONG
 	
 	xmlDocPtr doc;
@@ -526,14 +526,25 @@ pwlist_export(PWList *pwlist)
 
 	// Fetch the IDs
 	gnupg_get_ids(ids,max_id_num);
-	gnupg_get_id(id);
-	if(id[0] == 0){
+
+	// Check we really got one
+	for(i=0; i<max_id_num; i++) {
+		if(ids[i][0] != 0) {
+			valid_ids++;
+		}
+	}
+
+	if(valid_ids == 0) {
 		debug("export_passwd_list: cancel because id is blank");
 		return -1;
+	} else {
+		debug("exporting to %d ids", valid_ids);
 	}
-	
+
+	// Get the filename to export to
 	gnupg_get_filename(file, 'w');
 
+	// Do the export
 	debug("export_passwd_list: construct xml doc");
 	snprintf(vers, 5, "%d", FF_VERSION);
 	doc = xmlNewDoc((xmlChar*)"1.0");
@@ -546,10 +557,11 @@ pwlist_export(PWList *pwlist)
 
 	xmlDocSetRootElement(doc, root);
 
-	gnupg_write(doc, id, file);
+	gnupg_write_many(doc, ids, max_id_num, file);
 	
 	xmlFreeDoc(doc);
 
+	// All done.
 	// Free our ID structures
 	for(i=0; i<max_id_num; i++) {
 		free(ids[i]);

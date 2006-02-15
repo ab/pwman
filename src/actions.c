@@ -252,7 +252,8 @@ action_input_dialog(InputField *fields, int num_fields, char *title)
 int 
 action_input_gpgid_dialog(InputField *fields, int num_fields, char *title)
 {
-	int ch, i, valid_id;
+	int i, valid_id;
+	int ch = '1', first_time = 1;
 	char *ret;
 	WINDOW *dialog_win;
 	char msg[] = "(press 'q' when export recipient list is complete)";
@@ -269,7 +270,10 @@ action_input_gpgid_dialog(InputField *fields, int num_fields, char *title)
 	/*
 	 * actions loop - ignore read only as not changing main state
 	 */
-	while((ch = wgetch(dialog_win)) != 'q'){
+	while(first_time || ((ch = wgetch(dialog_win)) != 'q')){
+		// On first loop, drop straight into recipient 1
+		first_time = 0;
+
 		if( (ch >= '1') && (ch <= NUM_TO_CHAR(num_fields)) ){
 			i = CHAR_TO_NUM(ch);
 			fields[i].value = (void*)ui_statusline_ask_str(fields[i].name, 

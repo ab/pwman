@@ -271,10 +271,7 @@ gnupg_get_ids(char **ids, int max_id_num)
 		fields[i].type = STRING;
 	}
 
-	// Ask for the first recipient
-	ui_statusline_ask_str(fields[0].name, ids[0], STRING_LONG);
-
-	// Prompt to edit the others
+	// Prompt to edit the recipients
 	// This will verify the IDs for us
 	action_input_gpgid_dialog(fields, max_id_num, "Edit Recipients");
 }
@@ -355,23 +352,42 @@ gnupg_check_executable()
 int
 gnupg_write(xmlDocPtr doc, char* id, char* filename)
 {
+	return gnupg_write_many(doc, &id, 1, filename);
+}
+
+int
+gnupg_write_many(xmlDocPtr doc, char** ids, int num_ids, char* filename)
+{
 	FILE *streams[3];
 	char cmd[STRING_LONG], buf[STRING_LONG];
 	char *args[10];
 	char *err;
-	int pid;
+	int pid, i, pos, num_valid_ids;
 
 	debug("gnupg_write: do some checks");	
 	if((gnupg_check_executable() != 0) || !filename || (filename[0] == 0)){
 		debug("gnupg_write: no gnupg or filename not set");
 		return -1;
 	}
-	if(gnupg_check_id(id) != 0){
-		gnupg_get_id(id);
 
-		if(id[0] == 0){
-			return -1;
+	// Ensure all IDs are valid, and we have enough
+	num_valid_ids = 0;
+	for(i=0; i<num_ids; i++) {
+		if(ids[i][0] != 0) {
+			if(gnupg_check_id(ids[i]) != 0) {
+				gnupg_get_id(ids[i]);
+				
+				if(ids[i][0] == 0) {
+					return -1;
+				}
+			}
+
+			num_valid_ids++;
 		}
+	}
+	debug("gnupg_write: writing to %d recipients", num_valid_ids);
+	if(num_valid_ids == 0) {
+		return -1;
 	}
 
 	debug("gnupg_write: start writing");
@@ -383,11 +399,20 @@ gnupg_write(xmlDocPtr doc, char* id, char* filename)
 	args[3] = "--always-trust"; /* gets rid of error when moving 
 				       keys from other machines */
 	args[4] = "--yes";
-	args[5] = "-r";
-	args[6] = id;
-	args[7] = "-o";
-	args[8] = gnupg_expand_filename( filename );
-	args[9] = NULL;
+	args[5] = "-o";
+	args[6] = gnupg_expand_filename( filename );
+
+	// Add in all the recipients
+	pos = 7;
+	for(i=0; i<num_ids; i++) {
+		if(ids[i][0] != 0) {
+			args[pos] = "-r";
+			pos++;
+			args[pos] = ids[i];
+			pos++;
+		}
+	}
+	args[pos] = NULL;
 
 	while(1){
 		/* clear err buffer */
