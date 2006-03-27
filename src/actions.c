@@ -133,6 +133,44 @@ action_edit_pw(Pw *pw)
 	action_input_dialog(fields, (sizeof(fields)/sizeof(InputField)), "Edit Password");
 }
 
+int 
+action_list_rename()
+{
+	Pw* curpw;
+	PWList* curpwl;
+	char *new_name;
+
+	new_name = malloc(STRING_MEDIUM);
+
+	switch(uilist_get_highlighted_type()){
+		case PW_ITEM:
+			curpw = uilist_get_highlighted_item();
+			if(curpw){
+				ui_statusline_ask_str("New Name", new_name, STRING_MEDIUM);
+				if(strlen(new_name) > 0) {
+					pwlist_rename_item(curpw, new_name);
+				}
+			}
+			break;
+		case PW_SUBLIST:
+			curpwl = uilist_get_highlighted_sublist();
+			if(curpwl){
+				ui_statusline_ask_str("New Sublist Name", new_name, STRING_MEDIUM);
+				if(strlen(new_name) > 0) {
+					pwlist_rename_sublist(curpwl, new_name);
+				}
+			}
+			break;
+		case PW_UPLEVEL:
+		case PW_NULL:
+		default:
+			/* do nothing */
+			break;
+	}
+
+	uilist_refresh();
+}
+
 int
 action_edit_options()
 {

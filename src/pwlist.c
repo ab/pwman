@@ -118,6 +118,15 @@ pwlist_free_pw(Pw *old)
 }
 
 int
+pwlist_rename_item(Pw* pwitem, char* new_name) {
+	strncpy(pwitem->name, new_name, STRING_MEDIUM);
+}
+int
+pwlist_rename_sublist(PWList *pwlist, char* new_name) {
+	strncpy(pwlist->name, new_name, STRING_MEDIUM);
+}
+
+int
 pwlist_add(PWList *parent, char* name, char* host, char* user, char* passwd, char* launch)
 {
 	Pw* new = pwlist_new_pw();

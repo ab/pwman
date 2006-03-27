@@ -246,6 +246,14 @@ ui_run()
 			case 'U':
 				action_list_up_one_level();
 				break;
+			case 'r':
+				if (!options->readonly){
+					action_list_rename();
+					pwlist_write_file();
+				} else {
+					statusline_readonly();
+				}
+				break;
 			case 'a':
 				if (!options->readonly){
 					action_list_add_pw();
@@ -612,12 +620,12 @@ ui_display_help()
 	int i;
 	WINDOW *helpwin;
 
-	helpwin = newwin(LINES - 5, COLS - 6, 2, 3);
+	helpwin = newwin(LINES - 5, COLS - 6, 3, 3);
 	uilist_clear();
 
 	for(i = 0; help[i] != NULL; i++){
 		waddstr(helpwin, help[i]);
-		if( !((i+1) % (LINES - 8)) || (help[i+1] == NULL) ){
+		if( !((i+1) % (LINES - 9)) || (help[i+1] == NULL) ){
 	/*		refresh();*/
 			wrefresh(helpwin);
 			ui_statusline_msg("Press any key to continue...");
