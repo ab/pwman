@@ -293,13 +293,19 @@ read_pwlist(xmlNodePtr parent, PWList *parent_list)
 	if(!parent || !parent->name){
 		return -1;
 	} 
+	debug("Parent name is %s\n", parent->name);
+
 	if(strcmp((char*)parent->name, "PwList") == 0){
 		strncpy(name, xmlGetProp(parent, (xmlChar*)"name"), STRING_MEDIUM);
 		new = new_pwlist(name);
 
 		for(node = parent->children; node != NULL; node = node->next){
-			if(!node || !node->next){
-				fprintf(stderr, "read_pwlist: messed up node\n");
+			debug("Child name is %s\n", node->name);	
+			if(!node) {
+				fprintf(stderr, "read_pwlist: messed up node - null\n");
+			// Doesn't appear to be a problem
+//			} else if(!node->next){
+//				fprintf(stderr, "read_pwlist: messed up node - no next sibling\n");
 			} else if(strcmp(node->name, "PwList") == 0){
 				read_pwlist(node, new);
 			} else if(strcmp(node->name, "PwItem") == 0){

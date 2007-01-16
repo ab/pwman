@@ -122,17 +122,37 @@ filter_get()
 }
 
 
+int
+filter_alert(PwFilter* fil)
+{
+	char alert[80];	
 
+	if( (fil == NULL) || (fil->filter == NULL) ){
+		/* no filter object */
+		return 1;
+	}
+	if( strlen(fil->filter) == 0 ){
+		/* no filter */
+		return 1;
+	}
+	switch(fil->field){
+		case 0:
+			sprintf(alert, " (Filtering on name with '%s')", fil->filter);
+			break;
+		case 1:
+			sprintf(alert, " (Filtering on host with '%s')", fil->filter);
+			break;
+		case 2:
+			sprintf(alert, " (Filtering on user with '%s')", fil->filter);
+		case 3:
+			sprintf(alert, " (Filtering on launch with '%s')", fil->filter);
+		default:
+/*			fprintf(stderr, "Invalid filter field %d\n", fil->field);*/
+			break;
+	}
 
-
-
-
-
-
-
-
-
-
-
+	ui_statusline_clear();
+	ui_statusline_msg(alert);
+}
 
 

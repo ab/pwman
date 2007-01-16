@@ -1,7 +1,8 @@
 0.3.5   Nick Burch <gagravarr@users.sourceforge.net>
     * gnupg.c: add support for encrypting data to multiple recipients
     * gnupg.c/actions.c/pwlist.c: make the export of passwords and lists
-      handle multiple recipients
+      handle multiple recipients. (Normal use still only works with one)
+    * filter.c: show an on-screen alert when filtering is turned on
 
 0.3.4   Nick Burch <gagravarr@users.sourceforge.net>
     * *.c: implement read only patch from Jon

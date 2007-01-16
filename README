@@ -7,19 +7,49 @@ Some code has been taken from Jaakko Heinonen's abook.
 
 COMPILATION
 
-To compile you must have ncurses installed on you system. You also need libxml.
-Usage relies on Gnu Privacy Guard.
+ To compile you must have ncurses installed on you system. You also need libxml.
+ Usage relies on Gnu Privacy Guard (gpg) being installed.
 
 INSTALLATION
 
-Read INSTALL
+ Read INSTALL
 
+SETUP
+
+ When you first run pwman, it will prompt you for several things:
+
+* GnuPG ID
+   This is the ID of the GnuPG identity that will be used to encrypt the
+    password database. You can specify this as your email address, or as
+    the 8 (hex) digit key ID
+   See http://www.dewinter.com/gnupg_howto/english/GPGMiniHowto.html if you
+    are new to GnuPG, and need help importing or creating keys.
+* Path to GnuPG
+   PWMan needs to call GnuPG, to get it to decrypt and encrypt the password
+    database. So, you need to tell PWMan where to find your copy of pgp
+* Password Database File
+   This is the filename to use for storing your password database in.
+* Passphrase Timeout
+   PWMan only remembers your GnuPG password for a limted amount of time. After
+    this period has elapsed, you will need to re-enter it. This timeout is
+    there as a security measure, in case you wander off from your computer
+    without logging out.
+
+ These configuration settings will be written to your home directory. You can
+ change them at any time by running pwman, and pressing 'o' at any time.
+
+GETTING HELP
+
+ Once pwman is running, and you have entered your (GnuPG) passphrase, you can
+ hit '?' to get up the program help. This will tell you what all the keys are
+ to perform actions in pwman.
+ 
 LICENSE
 
-All files in this distribution are released under the GNU GENERAL PUBLIC LICENSE.
-See COPYING FOR DETAILS.
+ All files in this distribution are released under the GNU GENERAL PUBLIC 
+ LICENSE.
+ See COPYING FOR DETAILS.
 
 CONTACT AUTHOR
 
-Send bugreports, fixes, wishes etc. to 
-Nick Burch <gagravarr@users.sourceforge.net>
+ Send bugreports, fixes, wishes etc. to Nick Burch <code@gagravarr.org>

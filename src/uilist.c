@@ -177,6 +177,7 @@ uilist_refresh()
 		first_list_item = current_pw_sublist->current_item - (LIST_LINES-1);
 	}
 
+	// If we aren't at the top level, off the "Up One Level" item
 	if(current_pw_sublist->parent){
 		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
 			if(lines == current_pw_sublist->current_item){
@@ -192,6 +193,7 @@ uilist_refresh()
 		i++; 
 		lines++;
 	}
+	// Draw our sublists
 	for(listiter = current_pw_sublist->sublists; listiter != NULL; listiter = listiter->next){
 		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
 			if(lines == current_pw_sublist->current_item){
@@ -207,6 +209,7 @@ uilist_refresh()
 		i++; 
 		lines++;
 	}
+	// Draw our entries, if the filter says it's ok
 	for(iter = current_pw_sublist->list; (iter != NULL); iter = iter->next){
 		/*
 		 * if line satifies filter criteria increment i and lines
@@ -230,6 +233,18 @@ uilist_refresh()
 
 	wrefresh(list);
 	hide_cursor();
+
+	// Is the cursor off the screen, after moving up or down the tree?
+	if((lines-1) < current_pw_sublist->current_item) {
+		// Just adjust, then redraw
+		current_pw_sublist->current_item = lines-1;
+		uilist_refresh();
+	}
+
+	// If we have filtering turned on, then warn the user of that
+	if(options->filter) {
+		filter_alert(options->filter);
+	}
 
 	debug("refresh_list: done refreshing list");
 }

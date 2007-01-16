@@ -37,6 +37,8 @@ static char *help[] = {
 	"	r		rename item/sublist\n",
 	"	d/del		delete item/sublist\n",
 	"\n",
+	"	/		enable / disable filtering\n",
+	"\n",
 	"	l		launch item\n",
 	"	Format:		%u = user\n",
 	"			%h = host\n",

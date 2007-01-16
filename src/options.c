@@ -100,8 +100,10 @@ options_read()
 			if(text) strncpy(options->filter->filter, text, STRING_LONG);
 		} else if( strcmp((char*)node->name, "readonly") == 0){
 			options->readonly = TRUE;
+		} else if( strcmp((char*)node->name, "text") == 0){
+			// Safe to ignore. This is whitespace etc
 		} else {
-			debug("read_config: Unrecognised xml node");
+			debug("read_config: Unrecognised xml node '%s'", (char*)node->name);
 		}
 	}
 	write_options = TRUE;

@@ -300,7 +300,7 @@ gnupg_get_passphrase()
 	
 	passphrase_good = 0;
 
-	passphrase = ui_statusline_ask_passwd("Enter passphrase(^G to Cancel):", passphrase, 
+	passphrase = ui_statusline_ask_passwd("Enter GnuPG passphrase (^G to Cancel):", passphrase, 
 			STRING_LONG, 0x07); /* 0x07 == ^G */
 	passphrase_good = 1;
 
