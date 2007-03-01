@@ -235,10 +235,13 @@ uilist_refresh()
 	hide_cursor();
 
 	// Is the cursor off the screen, after moving up or down the tree?
-	if((lines-1) < current_pw_sublist->current_item) {
-		// Just adjust, then redraw
-		current_pw_sublist->current_item = lines-1;
-		uilist_refresh();
+	// (Don't trigger this if we have no entries yet)
+	if(current_pw_sublist->current_item) {
+		if((lines-1) < current_pw_sublist->current_item) {
+			// Just adjust, then redraw
+			current_pw_sublist->current_item = lines-1;
+			uilist_refresh();
+		}
 	}
 
 	// If we have filtering turned on, then warn the user of that

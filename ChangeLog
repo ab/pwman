@@ -1,3 +1,6 @@
+0.3.6   Nick Burch <gagravarr@users.sourceforge.net>
+	* uilist.c: fix so we don't have an inifinite loop if no data
+
 0.3.5   Nick Burch <gagravarr@users.sourceforge.net>
     * gnupg.c: add support for encrypting data to multiple recipients
     * gnupg.c/actions.c/pwlist.c: make the export of passwords and lists
