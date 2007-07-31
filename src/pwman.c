@@ -68,6 +68,8 @@ static void
 pwman_init(int argc, char *argv[])
 {
 	char c;
+	int load_worked;
+
 	signal(SIGKILL, pwman_quit);
 	signal(SIGTERM, pwman_quit);
 
@@ -112,9 +114,18 @@ pwman_init(int argc, char *argv[])
 
 	/* get pw database */
 	pwlist_init();
-	if(pwlist_read_file() != 0){
-		pwlist = pwlist_new("Main");
-		current_pw_sublist = pwlist;
+	load_worked = pwlist_read_file();
+	if(load_worked != 0) {
+		// Did they cancel out, or is it a new file?
+		if(load_worked < 0) {
+			pwlist = pwlist_new("Main");
+			current_pw_sublist = pwlist;
+		} else {
+			// Quit, hard!
+			ui_end();
+			fprintf(stderr, "\n\nGPG read cancelled, exiting\n");
+			exit(1);
+		}
 	}
 	if (!options->readonly){
 		pwman_create_lock_file();

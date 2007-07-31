@@ -433,15 +433,31 @@ pwlist_read(xmlNodePtr parent, PWList *parent_list)
 int
 pwlist_read_file()
 {
+    char fn[STRING_LONG];
 	char *buf, *cmd, *s, *text;
 	int i = 0;
+	int gnupg_worked = 0;
 	xmlNodePtr node, root;
 	xmlDocPtr doc;
 
+	// Have the defined a file yet?
 	if(!options->password_file){
 		return -1;
 	}
-	gnupg_read(options->password_file, &doc);	
+	// Do we need to create a new file?
+	snprintf(fn, STRING_LONG, "%s", options->password_file);
+	if(access(fn, F_OK) != 0){
+		ui_statusline_msg("Database not found, created. Press any key to begin  "); getch();
+		return -1;
+	}
+
+	// Try to load the file
+	gnupg_worked = gnupg_read(options->password_file, &doc);	
+
+	// Did it work?
+	if(gnupg_worked != 0) {
+		return gnupg_worked;
+	}
 	
 	if(!doc){
 		ui_statusline_msg("Bad xml Data");

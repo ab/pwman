@@ -159,22 +159,23 @@ gnupg_exec_end(int pid, FILE *stream[3])
 	waitpid(pid, NULL, 0);
 }
 
-static int
-gnupg_find_recp(char *str, char *user)
+static char*
+gnupg_find_recp(char *str)
 {
-	regex_t reg;
-	regmatch_t pmatch;
-	int i[3];
+	char *user;
+	char *start;
+	char *end;
+	int size;
 
-	regcomp(&reg, "\"", 0);
-	regexec(&reg, str, 1, &pmatch, 0);
-	i[0] = pmatch.rm_eo;
-	regexec(&reg, str, 1, &pmatch, 0);
-	i[1] = pmatch.rm_so;
+	start = strstr(str,"\"") + 1;
+	end = strstr(start,"\"");
 
-	i[2] = i[1] - i[0];
-	user = malloc(i[2]+1);
-	strncpy(user, str+i[0], i[2]);
+	size = end - start;
+
+	user = malloc(size+1);
+	strncpy(user, start, size);
+	debug("Recipient is %s", user);
+	return user;
 }
 
 int
@@ -463,6 +464,7 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 	char *args[9], *passphrase, *data, *err, buf[STRING_LONG], *user;
 	FILE *streams[3];
 	int pid;
+	int ret = 0;
 	
 	if(gnupg_check_executable() != 0){
 		*doc = xmlNewDoc("1.0");
@@ -492,11 +494,15 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 		if(data != NULL){ free(data); data = NULL; }
 		
 		passphrase = (char*)gnupg_get_passphrase();
+
 		if(passphrase == NULL){
+			// They hit cancel on the password prompt
 			write_options = 0;
 			filename[0] = 0;
+			ret = 255;
 			break;
 		}
+
 		pid = gnupg_exec(options->gpg_path, args, streams);
 
 		fputs( passphrase, streams[STDIN]);
@@ -515,6 +521,7 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 		gnupg_exec_end(pid, streams);
 
 		debug("gnupg_read: start error checking");
+		debug(err);
 		/*
 		 * check for errors(no key, bad pass, no file etc etc)
 		 */
@@ -530,13 +537,17 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 			debug("gnupg_read: cannot open %s", filename);
 			snprintf(buf, STRING_LONG, "Cannot open file \"%s\"", filename);
 			ui_statusline_msg(buf); getch();
+
+			ret = -1;
 			break;
 		}
 		if( gnupg_str_in_buf(err, GPG_ERR_NOSECRETKEY) ){
-			gnupg_find_recp(err, user);
-			debug("gnupg_read: bad user %s", user);
+			debug("gnupg_read: secret key not available!");
+			user = gnupg_find_recp(err);
 			snprintf(buf, STRING_LONG, "You do not have the secret key for %s", user);
 			ui_statusline_msg(buf); getch();
+
+			ret = 254;
 			break;
 		}
 		break;
@@ -557,5 +568,5 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 
 	debug("gnupg_read: finished all");
 
-	return 0;
+	return ret;
 }
