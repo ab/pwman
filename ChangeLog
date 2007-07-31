@@ -1,3 +1,7 @@
+0.3.7   Nick Burch <gagravarr@users.sourceforge.net>
+    * gnupg.c/pwman.c: improved handling of new files, and when you cancel the
+      gnupg passphrase input / key not found
+
 0.3.6   Nick Burch <gagravarr@users.sourceforge.net>
 	* uilist.c: fix so we don't have an inifinite loop if no data
 
