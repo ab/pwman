@@ -5,14 +5,77 @@
 PWMan is a password manager which uses gpg encryption to safeguard your data.
 Some code has been taken from Jaakko Heinonen's abook.
 
-COMPILATION
 
- To compile you must have ncurses installed on you system. You also need libxml.
- Usage relies on Gnu Privacy Guard (gpg) being installed.
+INSTALLATION REQUIREMENTS
 
-INSTALLATION
+ PWMan is distributed as source files, and hence needs to be compiled and 
+ installed manually. Installation configuration should check and bring in
+ all dependencies for you, but ensure you have the following development 
+ libraries on your machine before commencing (as configuration will need 
+ to be restarted from the beginning each time a dependency fails):
 
- Read INSTALL
+  * gcc or some other C compiler
+  * libc6 standard C development libraries
+  * ncurses development libraries
+  * libxml2 GNOME XML library
+
+ You can install all of these on e.g. Ubuntu with the following command:
+
+  % sudo apt-get install libc6-dev libncurses5-dev libxml2 gcc 
+
+ Or on Fedora with:
+
+  % sudo yum install glibc-devel ncurses-devel libxml2-devel gcc
+
+
+COMPILATION AND INSTALLATION
+
+ All tasks related to compilation, deployment etc. are managed by the C
+ utility make. First, configure the process: from within the top-level
+ directory of the distribution run
+
+  % ./configure
+
+ If you already have all the necessary dependencies installed then this
+ will run its course with no errors; otherwise try to fix any failed
+ dependencies (on Ubuntu, this will always be possible using standard
+ packages).
+
+ Then run the following sequence of commands to compile, check and then
+ install the compiled binary:
+
+  % make
+  % make check
+  % sudo make install
+
+ More detailed information, including other make options, can be found
+ in the INSTALL file included in this distribution.
+
+
+ROLLBACK
+
+ Because pwman is installed separately from standard package management, you
+ will need to take note of the files mentioned during "sudo make install"
+ above in order to roll the installation back. As of v0.3.7, these are:
+
+  * /usr/local/bin/pwman
+  * /usr/local/bin/convert_pwdb
+  * /usr/local/bin/pwdb2csv
+  * /usr/local/man/man1/pwman.1
+
+
+BEFORE USING PWMAN
+
+ While compilation does not directly require it, usage relies on Gnu Privacy 
+ Guard (gpg) being installed. You will need to specify a GnuPG ID the
+ first time a user runs pwman, so this must be set up beforehand.
+
+ There is more information on the gpg manpage, but you can probably just run
+
+  % gpg --gen-key
+
+ and follow the on-screen instructions.
+
 
 SETUP
 
@@ -38,17 +101,20 @@ SETUP
  These configuration settings will be written to your home directory. You can
  change them at any time by running pwman, and pressing 'o' at any time.
 
+
 GETTING HELP
 
  Once pwman is running, and you have entered your (GnuPG) passphrase, you can
  hit '?' to get up the program help. This will tell you what all the keys are
  to perform actions in pwman.
  
+
 LICENSE
 
  All files in this distribution are released under the GNU GENERAL PUBLIC 
  LICENSE.
  See COPYING FOR DETAILS.
+
 
 CONTACT AUTHOR
 
