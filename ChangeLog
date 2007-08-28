@@ -1,3 +1,8 @@
+0.3.8   Nick Burch <gagravarr@users.sourceforge.net>
+    * pwlist.c/actions.c: support moving entries and sublists up and down
+      within their parent list, using [ and ]. (You could already move them
+      to parent or child lists)
+
 0.3.7   Nick Burch <gagravarr@users.sourceforge.net>
     * gnupg.c/pwman.c: improved handling of new files, and when you cancel the
       gnupg passphrase input / key not found
