@@ -677,7 +677,7 @@ action_list_move_item_up()
 			break;
 		case PW_SUBLIST:
 			curpwl = uilist_get_highlighted_sublist();
-			worked = pwlist_change_list_order(current_pw_sublist, 1);
+			worked = pwlist_change_list_order(curpwl, 1);
 			break;
 		case PW_UPLEVEL:
 		case PW_NULL:
@@ -705,7 +705,7 @@ action_list_move_item_down()
 			break;
 		case PW_SUBLIST:
 			curpwl = uilist_get_highlighted_sublist();
-			worked = pwlist_change_list_order(current_pw_sublist, 0);
+			worked = pwlist_change_list_order(curpwl, 0);
 			break;
 		case PW_UPLEVEL:
 		case PW_NULL:

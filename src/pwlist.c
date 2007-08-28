@@ -119,27 +119,33 @@ pwlist_free_pw(Pw *old)
 
 int
 pwlist_change_item_order(Pw* pw, PWList *parent, int moveUp) {
-	Pw *iter;
-	Pw* pprev;
-	Pw* prev;
-	Pw* next;
-	Pw* nnext;
+	Pw *iter = NULL;
+	Pw *pprev = NULL;
+	Pw *prev = NULL;
+	Pw *next = NULL;
+	Pw *nnext = NULL;
 
-	// Find us
+	// Find us, in our parents list of children
 	for(iter = parent->list; iter != NULL; iter = iter->next){
 		if(iter == pw) {
+			// Grab the next one, and the one after
 			next = pw->next;
-			nnext = next->next;
+			if(next != NULL) {
+				nnext = next->next;
+			} else {
+				nnext = NULL;
+			}
 
 			// Which way do we need to shuffle?
 			if(moveUp) {
 				// Up the list, if we can
 				if(prev == NULL) { break; }
+
 				// Are we going to the top?
 				if(prev == parent->list) {
 					parent->list = pw;
-					next->next = nnext;
-					pw->next = next;
+					pw->next = prev;
+					prev->next = next;
 				} else {
 					pprev->next = pw;
 					pw->next = prev;
@@ -149,6 +155,7 @@ pwlist_change_item_order(Pw* pw, PWList *parent, int moveUp) {
 			} else {
 				// Down the list, if we can
 				if(next == NULL) { break; }
+
 				// Were we at the top?
 				if(pw == parent->list) {
 					parent->list = next;
@@ -172,15 +179,70 @@ pwlist_change_item_order(Pw* pw, PWList *parent, int moveUp) {
 }
 
 int
-pwlist_change_list_order(PWList *list, int moveUp) {
-	int i;
-	PWList* prev;
-	PWList* next;
+pwlist_change_list_order(PWList *pw, int moveUp) {
+	// Grab the parent, assuming there is one
+	PWList *parent = pw->parent;
+	if(parent==NULL) { return 0; }
 
-	// Grab the parent
-	PWList *parent = list->parent;
 
 	// Find us
+	PWList *iter = NULL;
+	PWList *pprev = NULL;
+	PWList *prev = NULL;
+	PWList *next = NULL;
+	PWList *nnext = NULL;
+
+	// Find us, in our parents list of children
+	for(iter = parent->sublists; iter != NULL; iter = iter->next){
+		if(iter == pw) {
+			// Grab the next one, and the one after
+			next = pw->next;
+			if(next != NULL) {
+				nnext = next->next;
+			} else {
+				nnext = NULL;
+			}
+
+			// Which way do we need to shuffle?
+			if(moveUp) {
+				// Up the list, if we can
+				if(prev == NULL) { break; }
+
+				// Are we going to the top?
+				if(prev == parent->sublists) {
+					parent->sublists = pw;
+					pw->next = prev;
+					prev->next = next;
+				} else {
+					pprev->next = pw;
+					pw->next = prev;
+					prev->next = next;
+				}
+				return 1;
+			} else {
+				// Down the list, if we can
+				if(next == NULL) { break; }
+
+				// Were we at the top?
+				if(pw == parent->sublists) {
+					parent->sublists = next;
+					next->next = pw;
+					pw->next = nnext;
+				} else {
+					prev->next = next;
+					next->next = pw;
+					pw->next = nnext;
+				}
+				return 1;
+			}
+		} else {
+			// Update the running list of prev and pprev
+			pprev = prev;
+			prev = iter;
+		}
+	}
+
+	return 0;
 }
 
 int
