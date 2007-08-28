@@ -34,6 +34,8 @@ static char *help[] = {
 	"	A		add sublist\n",
 	"	m		move item/sublist\n",
 	"	M		move item/sublist up one level\n",
+	"	[		move item up the list\n",
+	"	]		move item down the list\n",
 	"	r		rename item/sublist\n",
 	"	d/del		delete item/sublist\n",
 	"\n",

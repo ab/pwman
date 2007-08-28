@@ -118,6 +118,72 @@ pwlist_free_pw(Pw *old)
 }
 
 int
+pwlist_change_item_order(Pw* pw, PWList *parent, int moveUp) {
+	Pw *iter;
+	Pw* pprev;
+	Pw* prev;
+	Pw* next;
+	Pw* nnext;
+
+	// Find us
+	for(iter = parent->list; iter != NULL; iter = iter->next){
+		if(iter == pw) {
+			next = pw->next;
+			nnext = next->next;
+
+			// Which way do we need to shuffle?
+			if(moveUp) {
+				// Up the list, if we can
+				if(prev == NULL) { break; }
+				// Are we going to the top?
+				if(prev == parent->list) {
+					parent->list = pw;
+					next->next = nnext;
+					pw->next = next;
+				} else {
+					pprev->next = pw;
+					pw->next = prev;
+					prev->next = next;
+				}
+				return 1;
+			} else {
+				// Down the list, if we can
+				if(next == NULL) { break; }
+				// Were we at the top?
+				if(pw == parent->list) {
+					parent->list = next;
+					next->next = pw;
+					pw->next = nnext;
+				} else {
+					prev->next = next;
+					next->next = pw;
+					pw->next = nnext;
+				}
+				return 1;
+			}
+		} else {
+			// Update the running list of prev and pprev
+			pprev = prev;
+			prev = iter;
+		}
+	}
+
+	return 0;
+}
+
+int
+pwlist_change_list_order(PWList *list, int moveUp) {
+	int i;
+	PWList* prev;
+	PWList* next;
+
+	// Grab the parent
+	PWList *parent = list->parent;
+
+	// Find us
+}
+
+int
 pwlist_rename_item(Pw* pwitem, char* new_name) {
 	strncpy(pwitem->name, new_name, STRING_MEDIUM);
 }

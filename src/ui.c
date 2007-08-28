@@ -338,9 +338,11 @@ ui_run()
 			case 'l':
 				action_list_launch();
 				break;
+			case 0x0B: /* control-k (up) */
 			case '[':
 				action_list_move_item_up();
 				break;
+			case 0x0A: /* control-j (down) */
 			case ']':
 				action_list_move_item_down();
 				break;

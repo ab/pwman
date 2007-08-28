@@ -664,6 +664,57 @@ action_list_read_file()
 }
 
 int
-action_list_move_item_up(){}
+action_list_move_item_up()
+{
+	Pw* curpw;
+	PWList *curpwl;
+	int worked = 0;
+
+	switch(uilist_get_highlighted_type()){
+		case PW_ITEM:
+			curpw = uilist_get_highlighted_item();
+			worked = pwlist_change_item_order(curpw, current_pw_sublist, 1);
+			break;
+		case PW_SUBLIST:
+			curpwl = uilist_get_highlighted_sublist();
+			worked = pwlist_change_list_order(current_pw_sublist, 1);
+			break;
+		case PW_UPLEVEL:
+		case PW_NULL:
+		default:
+			/* do nothing */
+			break;
+	}
+
+	if(worked) {
+		uilist_up();
+	}
+}
+
 int 
-action_list_move_item_down(){}
+action_list_move_item_down()
+{
+	Pw* curpw;
+	PWList *curpwl;
+	int worked = 0;
+
+	switch(uilist_get_highlighted_type()){
+		case PW_ITEM:
+			curpw = uilist_get_highlighted_item();
+			worked = pwlist_change_item_order(curpw, current_pw_sublist, 0);
+			break;
+		case PW_SUBLIST:
+			curpwl = uilist_get_highlighted_sublist();
+			worked = pwlist_change_list_order(current_pw_sublist, 0);
+			break;
+		case PW_UPLEVEL:
+		case PW_NULL:
+		default:
+			/* do nothing */
+			break;
+	}
+
+	if(worked) {
+		uilist_down();
+	}
+}
