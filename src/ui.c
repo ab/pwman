@@ -183,6 +183,7 @@ ui_run()
 	Pw *current_item;
 	int ch;
 	int i = 0;
+	int load_worked = 0;
 #ifdef DEBUG
 	int debug_i = 0;
 #endif
@@ -207,7 +208,11 @@ ui_run()
 			ui_statusline_msg("Passphrase has timed out and you must enter it again.");
 			getch();
 			
-			pwlist_read_file();
+			load_worked = pwlist_read_file();
+			if(load_worked != 0) {
+				ui_statusline_msg("Error - unable to re-load the password file!");
+				break;
+			}
 
 			time_base = time(NULL);
 		}

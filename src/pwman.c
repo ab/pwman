@@ -116,6 +116,7 @@ pwman_init(int argc, char *argv[])
 	pwlist_init();
 	load_worked = pwlist_read_file();
 	if(load_worked != 0) {
+		debug("Failed to load the database, error was %d", load_worked);
 		// Did they cancel out, or is it a new file?
 		if(load_worked < 0) {
 			pwlist = pwlist_new("Main");

@@ -166,12 +166,27 @@ gnupg_find_recp(char *str)
 	char *start;
 	char *end;
 	int size;
+	debug(str);
 
-	start = strstr(str,"\"") + 1;
-	end = strstr(start,"\"");
+	// Is it "<id>" ?
+	start = strstr(str,"\"");
+	if(start != NULL) {
+		start += 1;
+		end = strstr(start,"\"");
+	} else {
+		// Is it ID <id>\n?
+		start = strstr(str,"ID");
+		if(start != NULL) {
+			start += 3;
+			end = strstr(start,"\n");
+		} else {
+			// No idea
+			user = "(not sure)";
+			return user;
+		}
+	}
 
 	size = end - start;
-
 	user = malloc(size+1);
 	strncpy(user, start, size);
 	debug("Recipient is %s", user);
