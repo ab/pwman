@@ -1,3 +1,6 @@
+0.3.9   Nick Burch <gagravarr@users.sourceforge.net>
+	* gnupg.c: fix segfault if the secret key isn't present
+
 0.3.8   Nick Burch <gagravarr@users.sourceforge.net>
     * pwlist.c/actions.c: support moving entries and sublists up and down
       within their parent list, using [ and ]. (You could already move them
