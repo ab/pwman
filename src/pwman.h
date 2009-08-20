@@ -47,6 +47,9 @@
 #define STRING_MEDIUM	128
 #define STRING_LONG	256
 
+#define MAX_SEARCH_RESULTS 25
+#define MAX_SEARCH_DEPTH 25
+
 #define MAIN_HELPLINE 	"q:quit  ?:help  a:add  e:edit  d:delete"
 #define READONLY_MSG	"RO"
 
@@ -64,7 +67,6 @@ struct _PW {
 	char *launch;
 	struct _PW *next;
 };
-
 typedef struct _PW Pw;
 
 struct _PWList {
@@ -77,8 +79,13 @@ struct _PWList {
 	/* ui stuff, shouldn't be here but this is a quick hack */
 	int current_item;
 };
-
 typedef struct _PWList PWList;
+
+struct _PWSearchResults {
+	PWList *sublists[MAX_SEARCH_RESULTS];
+	Pw *entries[MAX_SEARCH_RESULTS];
+};
+typedef struct _PWSearchResults PWSearchResults;
 
 typedef struct {
 	int field;
@@ -103,6 +110,7 @@ Options *options;
 int write_options;
 PWList *pwlist;
 PWList *current_pw_sublist;
+PWSearchResults *search_results;
 time_t time_base;
 
 char *trim_ws(char*);

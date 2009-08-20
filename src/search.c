@@ -48,19 +48,95 @@ search_strcasestr(char *haystack, char *needle){
 }
 
 int
-search_apply(Pw *pw, PwSearch* srch)
+search_apply()
 {
-	if( (srch == NULL) || (srch->search_term == NULL) ){
-		/* no search object */
-		return 1;
-	}
-	if( strlen(srch->search_term) == 0 ){
-		/* no search */
+	PWList *stack[MAX_SEARCH_DEPTH];
+	PWList *tmpList; 
+	Pw *tmp; 
+	int depth;
+
+	int found_sublists = 0;
+	int found_entries = 0;
+
+	// Replaces current_pw_sublist with a custom list of things
+	//  we found that looked suitable
+
+	if( search_active(options->search) == 0 ) {
 		return 1;
 	}
 
-	// TODO
+	if(search_results == NULL) {
+		search_results = malloc( sizeof(PWSearchResults) );
+	}
+
+	// Setup for start
+	depth = 0;
+	tmpList = pwlist;
+
+	// Find anything we like the look of
+	while(depth >= 0) {
+		// Any sublists?
+		if(tmpList->sublists != NULL && depth < MAX_SEARCH_DEPTH) {
+			// Prepare to descend
+			stack[depth] = tmpList;
+			depth++;
+			tmpList = tmpList->sublists;
+			// Test
+			if(search_strcasestr(tmpList->name, options->search->search_term)) {
+				if(found_sublists < MAX_SEARCH_RESULTS) {
+					search_results->sublists[found_sublists] = tmpList;
+					found_sublists++;
+				}
+			}
+			// Descend
+			continue;
+		}
+
+		// Any entries?
+		if(tmpList->list) {
+			tmp = tmpList->list;
+			while(tmp != NULL) {
+				// Test
+				if(1==0) {
+					if(found_entries < MAX_SEARCH_RESULTS) {
+						search_results->entries[found_entries] = tmp;
+						found_entries++;
+					}
+				}
+
+				// Next
+				tmp = tmp->next;
+			}
+		}
+
+		// Next sibling if there is one
+		if(tmpList->next != NULL) {
+			tmpList = tmpList->next;
+			continue;
+		}
+
+		// Otherwise step up
+		depth--;
+		if(depth >= 0) {
+			tmpList = stack[depth];
+		}
+	}
+	
+	// All done
 	return 1;
+}
+
+int 
+search_remove()
+{
+	// Put things back how they should have been
+	current_pw_sublist = pwlist;
+	current_pw_sublist->current_item = -1;
+
+	free(search_results);
+	search_results = NULL;
+
+	uilist_refresh();
 }
 
 void
@@ -92,12 +168,7 @@ search_alert(PwSearch* srch)
 {
 	char alert[80];	
 
-	if( (srch == NULL) || (srch->search_term == NULL) ){
-		/* no search object */
-		return 1;
-	}
-	if( strlen(srch->search_term) == 0 ){
-		/* no search */
+	if( search_active(srch) == 0 ) {
 		return 1;
 	}
 
@@ -108,3 +179,15 @@ search_alert(PwSearch* srch)
 }
 
 
+int search_active(PwSearch* srch)
+{
+	if( (srch == NULL) || (srch->search_term == NULL) ){
+		/* no search object */
+		return 0;
+	}
+	if( strlen(srch->search_term) == 0 ){
+		/* no search */
+		return 0;
+	}
+	return 1;
+}
