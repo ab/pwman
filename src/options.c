@@ -35,6 +35,7 @@ options_new()
 	new->readonly = FALSE;
 
 	new->filter = filter_new();
+	new->search = search_new();
 
 	return new;
 }
@@ -142,6 +143,8 @@ options_write()
 	snprintf(text, STRING_SHORT, "%d", options->filter->field);
 	node = xmlNewChild(root, NULL, (xmlChar*)"filter", (xmlChar*)options->filter->filter);
 	xmlSetProp(node, "field", text);
+
+	// Note - search isn't serialised, but filter is
 
 	xmlDocSetRootElement(doc, root);
 

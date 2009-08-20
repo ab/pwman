@@ -86,11 +86,16 @@ typedef struct {
 } PwFilter;
 
 typedef struct {
+	char *search_term;
+} PwSearch;
+
+typedef struct {
 	char *gpg_id;
 	char *gpg_path;
 	char *password_file;
 	int passphrase_timeout;
 	PwFilter *filter;
+	PwSearch *search;
 	int readonly;
 } Options;
 
@@ -107,6 +112,7 @@ int ui_run();
 int ui_end();
 
 PwFilter * filter_new();
+PwSearch * search_new();
 Options * options_new();
 
 Pw* pwlist_new_pw();

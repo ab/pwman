@@ -249,6 +249,11 @@ uilist_refresh()
 		filter_alert(options->filter);
 	}
 
+	// If we have searching active, then warn the user of that
+	if(options->search) {
+		search_alert(options->search);
+	}
+
 	debug("refresh_list: done refreshing list");
 }
 

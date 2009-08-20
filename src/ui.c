@@ -329,6 +329,10 @@ ui_run()
 			case '/':
 				filter_get();
 				break;
+			case 'f':
+			case 'F':
+				search_get();
+				break;
 			case 'E':
 				action_list_export();
 				break;
