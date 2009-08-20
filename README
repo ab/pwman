@@ -102,6 +102,12 @@ SETUP
  change them at any time by running pwman, and pressing 'o' at any time.
 
 
+UPGRADE
+
+ Currently, all versions of pwman use the same encryption scheme (gpg) and
+ the same XML format. As such, to upgrade, simply drop in the new binary.
+
+
 GETTING HELP
 
  Once pwman is running, and you have entered your (GnuPG) passphrase, you can
