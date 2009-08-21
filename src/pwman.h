@@ -47,11 +47,10 @@
 #define STRING_MEDIUM	128
 #define STRING_LONG	256
 
-#define MAX_SEARCH_RESULTS 25
-#define MAX_SEARCH_DEPTH 25
-
 #define MAIN_HELPLINE 	"q:quit  ?:help  a:add  e:edit  d:delete"
 #define READONLY_MSG	"RO"
+
+#define MAX_SEARCH_DEPTH 25
 
 #define DEFAULT_UMASK 066
 
@@ -81,11 +80,16 @@ struct _PWList {
 };
 typedef struct _PWList PWList;
 
-struct _PWSearchResults {
-	PWList *sublists[MAX_SEARCH_RESULTS];
-	Pw *entries[MAX_SEARCH_RESULTS];
+struct _PWSearchResult {
+	/* Will have one of these two, never both! */
+	PWList *sublist;
+	Pw *entry;
+
+	/* The next one along, as with other structs */
+	struct _PWSearchResult* next;
 };
-typedef struct _PWSearchResults PWSearchResults;
+typedef struct _PWSearchResult PWSearchResult;
+
 
 typedef struct {
 	int field;
@@ -110,7 +114,7 @@ Options *options;
 int write_options;
 PWList *pwlist;
 PWList *current_pw_sublist;
-PWSearchResults *search_results;
+PWSearchResult *search_results;
 time_t time_base;
 
 char *trim_ws(char*);

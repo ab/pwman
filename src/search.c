@@ -55,8 +55,8 @@ search_apply()
 	Pw *tmp; 
 	int depth;
 
-	int found_sublists = 0;
-	int found_entries = 0;
+	PWSearchResult *cur;
+	PWSearchResult *next;
 
 	// Replaces current_pw_sublist with a custom list of things
 	//  we found that looked suitable
@@ -65,8 +65,8 @@ search_apply()
 		return 1;
 	}
 
-	if(search_results == NULL) {
-		search_results = malloc( sizeof(PWSearchResults) );
+	if(search_results != NULL) {
+		_search_free();
 	}
 
 	// Setup for start
@@ -83,10 +83,15 @@ search_apply()
 			tmpList = tmpList->sublists;
 			// Test
 			if(search_strcasestr(tmpList->name, options->search->search_term)) {
-				if(found_sublists < MAX_SEARCH_RESULTS) {
-					search_results->sublists[found_sublists] = tmpList;
-					found_sublists++;
+				next = malloc( sizeof(PWSearchResult) );
+				next->sublist = tmpList;
+
+				if(cur != NULL) {
+					cur->next = next;
+				} else {
+					search_results = next;
 				}
+				cur = next;
 			}
 			// Descend
 			continue;
@@ -97,11 +102,21 @@ search_apply()
 			tmp = tmpList->list;
 			while(tmp != NULL) {
 				// Test
-				if(1==0) {
-					if(found_entries < MAX_SEARCH_RESULTS) {
-						search_results->entries[found_entries] = tmp;
-						found_entries++;
+				if(search_strcasestr(tmp->name, options->search->search_term)
+				 || search_strcasestr(tmp->host, options->search->search_term)
+				 || search_strcasestr(tmp->user, options->search->search_term)
+				 || search_strcasestr(tmp->passwd, options->search->search_term)
+				 || search_strcasestr(tmp->launch, options->search->search_term)
+				) {
+					next = malloc( sizeof(PWSearchResult) );
+					next->entry = tmp;
+
+					if(cur != NULL) {
+						cur->next = next;
+					} else {
+						search_results = next;
 					}
+					cur = next;
 				}
 
 				// Next
@@ -133,10 +148,27 @@ search_remove()
 	current_pw_sublist = pwlist;
 	current_pw_sublist->current_item = -1;
 
-	free(search_results);
-	search_results = NULL;
+	// Free the memory held by the search results
+	_search_free();
 
+	// Back to the old screen
 	uilist_refresh();
+}
+
+int 
+_search_free()
+{
+	PWSearchResult *cur;
+	PWSearchResult *next;
+
+	// Free the memory held by the search results
+	cur = search_results;
+	while(cur != NULL) {
+		next = cur->next;
+		free(cur);
+		cur = next;
+	}
+	search_results = NULL;
 }
 
 void
@@ -156,7 +188,7 @@ search_get()
 	options->search->search_term =
 	ui_statusline_ask_str("String to search for: ", options->search->search_term, STRING_MEDIUM);
 
-	// TODO - searching
+	search_apply();
 
 	current_pw_sublist->current_item = -1;
 	uilist_refresh();
