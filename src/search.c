@@ -99,6 +99,9 @@ _search_add_if_matches(PWSearchResult* current, Pw* entry, PWList* list) {
 			// Additional hit, append
 			current->next = next;
 		}
+		// For now, nothing follows us
+		next->next = NULL;
+		// We are the new current entry
 		return next;
 	}
 }
@@ -115,12 +118,13 @@ search_apply()
 
 	PWSearchResult *cur = NULL;
 
-	if( search_active(options->search) == 0 ) {
-		return 1;
-	}
-
+	// Tidy up any existing search results
 	if(search_results != NULL) {
 		_search_free();
+	}
+	// If no search term, then nothing to do!
+	if( search_active(options->search) == 0 ) {
+		return 1;
 	}
 
 	// Setup for start
