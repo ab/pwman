@@ -28,8 +28,14 @@ search_new()
 	PwSearch *new;
 
 	new = malloc(sizeof(PwSearch));
+	if(new == NULL) {
+		pw_abort("Failed to allocate memory to hold search details!");
+	}
 
 	new->search_term = malloc(STRING_MEDIUM);
+	if(new->search_term == NULL) {
+		pw_abort("Failed to allocate memory to hold search term!");
+	}
 	new->search_term[0] = 0;
 
 	return new;
@@ -70,11 +76,13 @@ _search_add_if_matches(PWSearchResult* current, Pw* entry, PWList* list) {
 		) {
 			next = malloc( sizeof(PWSearchResult) );
 			next->entry = entry;
+			debug("Matched entry on host '%s'", entry->host);
 		}
 	} else {
 		if(search_strcasestr(list->name, options->search->search_term)) {
 			next = malloc( sizeof(PWSearchResult) );
 			next->sublist = list;
+			debug("Matched sublist '%s'", list->name);
 		}
 	}
 
@@ -103,10 +111,7 @@ search_apply()
 	int depth;
 	int stepping_back;
 
-	PWSearchResult *cur;
-
-	// Replaces current_pw_sublist with a custom list of things
-	//  we found that looked suitable
+	PWSearchResult *cur = NULL;
 
 	if( search_active(options->search) == 0 ) {
 		return 1;
@@ -214,7 +219,6 @@ search_get()
 		}
 	}
 
-	options->search->search_term =
 	ui_statusline_ask_str("String to search for: ", options->search->search_term, STRING_MEDIUM);
 
 	search_apply();
@@ -233,7 +237,11 @@ search_alert(PwSearch* srch)
 		return 1;
 	}
 
-	sprintf(alert, " (Searching for '%s')", srch->search_term);
+	if(search_results == NULL) {
+		sprintf(alert, " (No results found for '%s')", srch->search_term);
+	} else {
+		sprintf(alert, " (Searching for '%s')", srch->search_term);
+	}
 
 	ui_statusline_clear();
 	ui_statusline_msg(alert);

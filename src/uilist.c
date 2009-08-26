@@ -23,6 +23,7 @@
 
 WINDOW *list = NULL;
 int lines = 0;
+int first_list_item = 0;
 //int curitem = 0;
 
 int
@@ -145,13 +146,47 @@ uilist_get_highlighted_type()
 	return PW_NULL;
 }
 
+// Draw a sublist on the screen
+int
+_uilist_render_sublist(PWList *sublist, int i, int num_shown)
+{
+	if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
+		if(lines == current_pw_sublist->current_item){
+			uilist_highlight_line(num_shown);
+		} else {
+			wattrset(list, A_BOLD);
+		}
+		mvwprintw(list, num_shown, NAMEPOS, "%s ->", sublist->name);
+		wattrset(list, A_NORMAL);
+		wstandend(list);
+		num_shown++;
+	}
+	return num_shown;
+}
+// Draw an entry summary on the screen
+int
+_uilist_render_entry(Pw *entry, int i, int num_shown)
+{
+	if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
+		if(lines == current_pw_sublist->current_item){
+			uilist_highlight_line(num_shown);
+		}
+		mvwaddnstr(list, num_shown, NAMEPOS, entry->name, NAMELEN);
+		mvwaddnstr(list, num_shown, HOSTPOS, entry->host, HOSTLEN);
+		mvwaddnstr(list, num_shown, USERPOS, entry->user, USERLEN);
+		wstandend(list);
+		num_shown++;
+	}
+	return num_shown;
+}
+
 int
 uilist_refresh()
 {
 	Pw *iter;
 	PWList *listiter;
+	PWSearchResult *srchiter;
 	int i = 0;
-	static int first_list_item = 0;
 	int num_shown = 0;
 
 	debug("refresh_list: refreshing list");
@@ -163,6 +198,7 @@ uilist_refresh()
 	}
 
 	uilist_clear();;
+	first_list_item = 0;
 	lines = 0;
 
 	uilist_headerline();
@@ -177,58 +213,50 @@ uilist_refresh()
 		first_list_item = current_pw_sublist->current_item - (LIST_LINES-1);
 	}
 
-	// If we aren't at the top level, off the "Up One Level" item
-	if(current_pw_sublist->parent){
-		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
-			if(lines == current_pw_sublist->current_item){
-				uilist_highlight_line(num_shown);
-			} else {
-				wattrset(list, A_BOLD);
-			}
-			mvwprintw(list, num_shown, NAMEPOS, "<Up One Level - \"%s\">", current_pw_sublist->parent->name);
-			wattrset(list, A_NORMAL);
-			wstandend(list);
-			num_shown++;
-		}
-		i++; 
-		lines++;
-	}
-	// Draw our sublists
-	for(listiter = current_pw_sublist->sublists; listiter != NULL; listiter = listiter->next){
-		if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
-			if(lines == current_pw_sublist->current_item){
-				uilist_highlight_line(num_shown);
-			} else {
-				wattrset(list, A_BOLD);
-			}
-			mvwprintw(list, num_shown, NAMEPOS, "%s ->", listiter->name);
-			wattrset(list, A_NORMAL);
-			wstandend(list);
-			num_shown++;
-		}
-		i++; 
-		lines++;
-	}
-	// Draw our entries, if the filter says it's ok
-	for(iter = current_pw_sublist->list; (iter != NULL); iter = iter->next){
-		/*
-		 * if line satifies filter criteria increment i and lines
-		 */
-		if( filter_apply(iter, options->filter) ){
+	if(search_results == NULL) {
+		// If we aren't at the top level, off the "Up One Level" item
+		if(current_pw_sublist->parent && search_results == NULL){
 			if((i >= first_list_item) && (i <= LAST_LIST_ITEM)){
 				if(lines == current_pw_sublist->current_item){
 					uilist_highlight_line(num_shown);
+				} else {
+					wattrset(list, A_BOLD);
 				}
-				mvwaddnstr(list, num_shown, NAMEPOS, iter->name, NAMELEN);
-				mvwaddnstr(list, num_shown, HOSTPOS, iter->host, HOSTLEN);
-				mvwaddnstr(list, num_shown, USERPOS, iter->user, USERLEN);
+				mvwprintw(list, num_shown, NAMEPOS, "<Up One Level - \"%s\">", current_pw_sublist->parent->name);
+				wattrset(list, A_NORMAL);
 				wstandend(list);
 				num_shown++;
 			}
-			i++;	
+			i++; 
 			lines++;
 		}
-		
+		// Draw our sublists
+		for(listiter = current_pw_sublist->sublists; listiter != NULL; listiter = listiter->next){
+			num_shown = _uilist_render_sublist(listiter, i, num_shown);
+			lines++;
+			i++; 
+		}
+		// Draw our entries, if the filter says it's ok
+		for(iter = current_pw_sublist->list; (iter != NULL); iter = iter->next){
+			/*
+			 * if line satifies filter criteria increment i and lines
+			 */
+			if( filter_apply(iter, options->filter) ){
+				num_shown = _uilist_render_entry(iter, i, num_shown);
+				lines++;
+				i++;	
+			}
+		}
+	} else {
+		for(srchiter = search_results; (srchiter != NULL); srchiter = srchiter->next) {
+			if(srchiter->sublist != NULL) {
+				num_shown = _uilist_render_sublist(srchiter->sublist, i, num_shown);
+			} else {
+				num_shown = _uilist_render_entry(srchiter->entry, i, num_shown);
+			}
+			lines++;
+			i++;	
+		}
 	}
 
 	wrefresh(list);

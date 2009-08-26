@@ -20,17 +20,11 @@
 
 #include <pwman.h>
 
-void
-debug(char *fmt, ... )
+void _stderr_print(char *fmt, va_list ap)
 {
-#ifdef DEBUG
-	va_list ap;
 	int d, c;
 	char *s;
 
-	fputs("PWMan Debug% ", stderr);
-	
-	va_start(ap, fmt);
 	while(*fmt){
 		if(*fmt == '%'){
 			switch(*++fmt){
@@ -58,6 +52,25 @@ debug(char *fmt, ... )
 	}
 	va_end(ap);
 	fputc('\n', stderr);
+}
+
+void
+pw_abort(char *fmt, ... )
+{
+	va_list ap;
+	va_start(ap, fmt);
+	_stderr_print(fmt, ap);
+	exit(1);
+}
+
+void
+debug(char *fmt, ... )
+{
+#ifdef DEBUG
+	va_list ap;
+	fputs("PWMan Debug% ", stderr);
+	va_start(ap, fmt);
+	_stderr_print(fmt, ap);
 #endif
 }
 

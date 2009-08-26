@@ -28,9 +28,15 @@ filter_new()
 	PwFilter *new;
 
 	new = malloc(sizeof(PwFilter));
+	if(new == NULL) {
+		pw_abort("Failed to allocate memory to hold filtering details!");
+	}
 
 	new->field = -1;
 	new->filter = malloc(STRING_MEDIUM);
+	if(new == NULL) {
+		pw_abort("Failed to allocate memory to hold filtering term!");
+	}
 	new->filter[0] = 0;
 
 	return new;

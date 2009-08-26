@@ -327,11 +327,11 @@ ui_run()
 				ui_refresh_windows();
 				break;
 			case '/':
-				filter_get();
-				break;
-			case 'f':
 			case 'F':
 				search_get();
+				break;
+			case 'f':
+				filter_get();
 				break;
 			case 'E':
 				action_list_export();

@@ -119,6 +119,7 @@ time_t time_base;
 
 char *trim_ws(char*);
 void debug(char*, ...);
+void pw_abort(char*, ...);
 int ui_init();
 int ui_run();
 int ui_end();
