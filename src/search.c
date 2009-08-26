@@ -32,7 +32,7 @@ search_new()
 		pw_abort("Failed to allocate memory to hold search details!");
 	}
 
-	new->search_term = malloc(STRING_MEDIUM);
+	new->search_term = malloc(STRING_LONG);
 	if(new->search_term == NULL) {
 		pw_abort("Failed to allocate memory to hold search term!");
 	}
@@ -64,7 +64,7 @@ search_strcasestr(char *haystack, char *needle){
 
 PWSearchResult* 
 _search_add_if_matches(PWSearchResult* current, Pw* entry, PWList* list) {
-	PWSearchResult* next;
+	PWSearchResult* next = NULL;
 
 	// Did we get an entry of a list?
 	if(entry != NULL) {
@@ -76,12 +76,14 @@ _search_add_if_matches(PWSearchResult* current, Pw* entry, PWList* list) {
 		) {
 			next = malloc( sizeof(PWSearchResult) );
 			next->entry = entry;
+			next->sublist = NULL;
 			debug("Matched entry on host '%s'", entry->host);
 		}
 	} else {
 		if(search_strcasestr(list->name, options->search->search_term)) {
 			next = malloc( sizeof(PWSearchResult) );
 			next->sublist = list;
+			next->entry = NULL;
 			debug("Matched sublist '%s'", list->name);
 		}
 	}
@@ -106,8 +108,8 @@ int
 search_apply()
 {
 	PWList *stack[MAX_SEARCH_DEPTH];
-	PWList *tmpList; 
-	Pw *tmp; 
+	PWList *tmpList = NULL; 
+	Pw *tmp = NULL; 
 	int depth;
 	int stepping_back;
 

@@ -33,7 +33,7 @@ filter_new()
 	}
 
 	new->field = -1;
-	new->filter = malloc(STRING_MEDIUM);
+	new->filter = malloc(STRING_LONG);
 	if(new == NULL) {
 		pw_abort("Failed to allocate memory to hold filtering term!");
 	}
@@ -47,6 +47,14 @@ filter_new()
  */
 static char*
 filter_strcasestr(char *haystack, char *needle){
+	// Never matches if null/empty string given
+	if(haystack == NULL) {
+		return 0;
+	}
+	if(strlen(haystack) == 0) {
+		return 0;
+	}
+
 #ifdef HAVE_STRCASESTR
 	return (char*)strcasestr(haystack, needle);
 #else
