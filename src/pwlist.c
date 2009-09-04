@@ -418,23 +418,23 @@ pwlist_write_node(xmlNodePtr root, Pw* pw)
 
 	node = xmlNewChild(root, NULL, (xmlChar*)"PwItem", NULL);
 
-	escaped = xmlEncodeSpecialChars(root, (xmlChar*)pw->name);
+	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->name);
 	xmlNewChild(node, NULL, (xmlChar*)"name", escaped);
 	xmlFree(escaped);
 	
-	escaped = xmlEncodeSpecialChars(root, (xmlChar*)pw->host);
+	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->host);
 	xmlNewChild(node, NULL, (xmlChar*)"host", escaped);
 	xmlFree(escaped);
 
-	escaped = xmlEncodeSpecialChars(root, (xmlChar*)pw->user);
+	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->user);
 	xmlNewChild(node, NULL, (xmlChar*)"user", escaped);
 	xmlFree(escaped);
 
-	escaped = xmlEncodeSpecialChars(root, (xmlChar*)pw->passwd);
+	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->passwd);
 	xmlNewChild(node, NULL, (xmlChar*)"passwd", escaped);
 	xmlFree(escaped);
 
-	escaped = xmlEncodeSpecialChars(root, (xmlChar*)pw->launch);
+	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->launch);
 	xmlNewChild(node, NULL, (xmlChar*)"launch", escaped);
 	xmlFree(escaped);
 }
