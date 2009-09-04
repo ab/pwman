@@ -51,6 +51,12 @@ int passphrase_good = 0;
 extern int errno;
 extern int write_options;
 
+int gnupg_hit_sigpipe = 0;
+static void gnupg_sigpipe_handler()
+{
+	gnupg_hit_sigpipe = 1;
+}
+
 static char *
 gnupg_add_to_buf(char *buf, char *new)
 {
@@ -123,6 +129,8 @@ gnupg_exec(char *path, char *args[], FILE *stream[3])
 	if( (path == NULL) || (args == NULL) ){
 		return -1;
 	}
+
+	// Do the right thing with the fork
 	if(pid == 0){
 		close(stdout_fd[0]);
 		close(stdin_fd[1]);
@@ -147,6 +155,10 @@ gnupg_exec(char *path, char *args[], FILE *stream[3])
 			stream[STDERR] = fdopen(stderr_fd[0], "r");
 		}
 		
+		// Mark us as not having had a sigpipe yet
+		gnupg_hit_sigpipe = 0;
+		signal(SIGPIPE, gnupg_sigpipe_handler);
+
 		return pid;
 	}
 }
@@ -154,6 +166,23 @@ gnupg_exec(char *path, char *args[], FILE *stream[3])
 static void
 gnupg_exec_end(int pid, FILE *stream[3])
 {
+	char buf[STRING_LONG];
+
+	// If we hit a problem, report that
+	if(gnupg_hit_sigpipe) {
+		fputs("GPG hit an error and died...\n", stderr);
+		while( fgets(buf, STRING_LONG - 1, stream[STDOUT]) != NULL ){
+			fputs(buf, stderr);
+		}
+		while( fgets(buf, STRING_LONG - 1, stream[STDERR]) != NULL ){
+			fputs(buf, stderr);
+		}
+		// TODO - figure out why we don't get the real error message from
+		//  GPG displayed here like one might expect
+	}
+	signal(SIGPIPE, NULL);
+
+	// Close up
 	debug("gnupg_exec_end : close streams");
 	if(stream[0]){ fclose(stream[0]); }
 	if(stream[1]){ fclose(stream[1]); }
@@ -161,6 +190,11 @@ gnupg_exec_end(int pid, FILE *stream[3])
 
 	debug("waiting for pid %d", pid);
 	waitpid(pid, NULL, 0);
+
+	// Bail out if gpg broke
+	if(gnupg_hit_sigpipe) {
+		exit(-1);
+	}
 }
 
 static char*
