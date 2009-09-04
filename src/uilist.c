@@ -65,6 +65,20 @@ uilist_highlight_line(int line)
         scrollok(list, TRUE);
 }
 
+PWSearchResult
+uilist_get_highlighted_searchresult() {
+	PWSearchResult *srchiter;
+	int i = -1;
+
+	for(srchiter = search_results; (srchiter != NULL); srchiter = srchiter->next) {
+		i++;
+		if(i == current_pw_sublist->current_item){
+			break;
+		}
+	}
+	return srchiter;
+}
+
 PWList *
 uilist_get_highlighted_sublist()
 {

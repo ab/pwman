@@ -41,6 +41,7 @@
 #include <sys/types.h>
 #include <regex.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #define STDOUT 0
 #define STDIN 1
@@ -111,7 +112,7 @@ gnupg_exec(char *path, char *args[], FILE *stream[3])
 	int stdin_fd[2];
 	int stdout_fd[2];
 	int stderr_fd[2];
-	int pid;
+	int pid, ret;
 
 	pipe(stdin_fd);
 	pipe(stdout_fd);
@@ -131,7 +132,10 @@ gnupg_exec(char *path, char *args[], FILE *stream[3])
 		dup2(stdin_fd[0], fileno(stdin));
 		dup2(stderr_fd[1], fileno(stderr));
 
-		execv(path, args);
+		ret = execv(path, args);
+		if(ret) {
+			pw_abort("Failed to run %s, aborted with error code %d", path, errno);
+		}
 	} else {
 		close(stdout_fd[1]);
 		close(stdin_fd[0]);
@@ -193,14 +197,17 @@ gnupg_find_recp(char *str)
 	return user;
 }
 
+// Returns 0 if found, -1 if not found, and -2 if found but expired
 int
 gnupg_check_id(char *id)
 {	
 	regex_t reg;
+	regex_t expired_reg;
 	int pid;
-	char text[STRING_LONG], idstr[STRING_LONG], keyid[STRING_LONG], *args[3];
+	char text[STRING_LONG], idstr[STRING_LONG], keyid[STRING_LONG], *args[4];
 	FILE *streams[3];
 	int id_is_key_id = 0;
+	int key_is_expired = 0;
 	
 	debug("check_gnupg_id: check gnupg id\n");
 
@@ -209,6 +216,9 @@ gnupg_check_id(char *id)
 		/* hmm, could be format string bug so tell get lost */
 		return -1;
 	}
+
+	// Build our expired key matching regexp
+	regcomp(&expired_reg, "^(pub|sub):e:", REG_EXTENDED);
 
 	// Is the supplied ID really a key ID?
 	// (If it is, it's 8 chars long, and 0-9A-F)
@@ -223,24 +233,36 @@ gnupg_check_id(char *id)
 	}
 
 	if(id_is_key_id == 1) {
-		// Match on "pub   SIZETYPE/KEYID DATE-DATE-DATE"
-		snprintf(idstr, STRING_LONG, "^pub[ \t]+[0-9]+[a-zA-Z]/%s[ \t]", id);
+		// Match on "pub:.:SIZE:type:FULLID:DATE"
+		// Where FULLID is 8 chars then the 8 chars we expected
+		snprintf(idstr, STRING_LONG, "^pub:.:[0-9]+:[0-9]+:[0-9a-zA-Z]{8}%s:", id);
 	} else {
-		// Match on "uid       NAME <EMAIL ADDRESS>"
+		// Match on "(pub|uid) .... NAME <EMAIL ADDRESS>"
 		snprintf(idstr, STRING_LONG, "[^<]*<%s>", id);
 	}
 
 	// Fire off GPG to find all our keys
 	args[0] = "gpg";
-	args[1] = "--list-keys";
-	args[2] = NULL;
+	args[1] = "--with-colons";
+	args[2] = "--list-keys";
+	args[3] = NULL;
 
 	pid = gnupg_exec(options->gpg_path, args, streams);
 
 	while( fgets(text, STRING_LONG, streams[STDOUT]) ){
 		regcomp(&reg, idstr, REG_EXTENDED);
 		if(regexec(&reg, text, 0, NULL , 0) == 0){
+			// Found the key!
+			// Check it isn't also expired
+			if(regexec(&expired_reg, text, 0, NULL , 0) == 0){
+				key_is_expired = 1;
+			}
+
 			gnupg_exec_end(pid, streams);
+
+			if(key_is_expired) {
+				return -2; 
+			}
 			return 0; 
 		}
 	}

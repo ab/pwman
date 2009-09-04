@@ -1,3 +1,11 @@
+0.3.10  Nick Burch <gagravarr@users.sourceforge.net>
+	* options.c: gpg_check_id now reports on expired keys (uses
+		--with-colons option to get more details from gpg to spot this)
+	* pwman.c: check that the key can be found and hasn't expired during
+		startup, warning about the problem in advance
+	* uilist.c: change the key of filtering from / to f
+	* pwlist.c/uilist.c: support searching for entries via /
+
 0.3.9   Nick Burch <gagravarr@users.sourceforge.net>
 	* gnupg.c: fix segfault if the secret key isn't present
 

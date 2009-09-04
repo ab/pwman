@@ -68,7 +68,7 @@ static void
 pwman_init(int argc, char *argv[])
 {
 	char c;
-	int load_worked;
+	int load_worked, gpg_id_valid;
 
 	signal(SIGKILL, pwman_quit);
 	signal(SIGTERM, pwman_quit);
@@ -94,6 +94,7 @@ pwman_init(int argc, char *argv[])
 		fprintf(stderr,"Delete file %s.lock? [y/n/r]\n",
 				options->password_file);
 		c = getchar();
+		fprintf(stderr,"\n");
 		switch (tolower(c)) {
 			case 'y':
 				pwman_delete_lock_file();
@@ -105,7 +106,24 @@ pwman_init(int argc, char *argv[])
 				exit(-1);
 		}
 	}
+
+	// Check that the gpg id is valid, if given
+	if(strlen(options->gpg_id)) {
+		gpg_id_valid = gnupg_check_id(options->gpg_id);
+		if(gpg_id_valid == -1) {
+			fprintf(stderr, "Your GPG key with id of '%s' could not be found\n", options->gpg_id);
+			fprintf(stderr, "You will be prompted for the correct key when saving\n");
+			fprintf(stderr, "\n(press any key to continue)\n");
+			c = getchar();
+		}
+		if(gpg_id_valid == -2) {
+			fprintf(stderr, "Your GPG key with id of '%s' has expired!\n", options->gpg_id);
+			fprintf(stderr, "Please change the expiry date of your key, or switch to a new one\n");
+			exit(-1);
+		}
+	}
 	
+	// Start up our UI
 	if( ui_init() ){
 		exit(1);
 	}
