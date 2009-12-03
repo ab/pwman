@@ -256,7 +256,7 @@ search_alert(PwSearch* srch)
 	if(search_results == NULL) {
 		sprintf(alert, " (No results found for '%s')", srch->search_term);
 	} else {
-		sprintf(alert, " (Searching for '%s')", srch->search_term);
+		sprintf(alert, " (Search results for '%s')", srch->search_term);
 	}
 
 	ui_statusline_clear();
