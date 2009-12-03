@@ -1,0 +1,15 @@
+Source: pwman
+Section: unknown
+Priority: extra
+Maintainer: Nick Burch <gagravarr@users.sourceforge.net>
+Build-Depends: debhelper (>= 7), autotools-dev, libxml2-dev, libncurses5-dev
+Depends: gnupg, libxml2, libncureses5
+Standards-Version: 3.7.3
+Homepage: http://pwman.sourceforge.net/
+
+Package: pwman
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A password manager which uses gpg to safeguard your data
+ PWMan is a password manager which uses gpg encryption to safeguard your data.
+ Some code has been taken from Jaakko Heinonen's abook.
