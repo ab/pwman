@@ -153,6 +153,7 @@ search_apply()
 			// Descend into first child
 			continue;
 		}
+		stepping_back = 0;
 
 		// Any entries?
 		if(tmpList->list) {
