@@ -24,6 +24,7 @@
 extern Pw * uilist_get_highlighted_item();
 extern PWList * uilist_get_highlighted_sublist();
 extern PWList * pwlist_new(char*);
+extern PWSearchResult * uilist_get_highlighted_searchresult();
 extern char *pwgen_ask();
 
 int disp_h = 15, disp_w = 60;
