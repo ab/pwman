@@ -418,13 +418,31 @@ action_list_select_item()
 		cursearch = uilist_get_highlighted_searchresult();
 		curpwl = cursearch->sublist;
 		curpw = cursearch->entry;
+
+		if(curpw){
+			action_edit_pw(curpw);
+		} else if(curpwl){
+			// Quite out of searching
+			search_remove();
+
+			// Now display the selected sublist
+			current_pw_sublist = curpwl;
+			uilist_refresh();
+		}
 	} else {
 		switch(uilist_get_highlighted_type()){
 			case PW_ITEM:
 				curpw = uilist_get_highlighted_item();
+				if(curpw){
+					action_edit_pw(curpw);
+				}
 				break;
 			case PW_SUBLIST:
 				curpwl = uilist_get_highlighted_sublist();
+				if(curpwl){
+					current_pw_sublist = curpwl;
+					uilist_refresh();
+				}
 				break;
 			case PW_UPLEVEL:
 				action_list_up_one_level();
@@ -434,14 +452,6 @@ action_list_select_item()
 				/* do nothing */
 				break;
 		}
-	}
-
-	// If we picked something, display it
-	if(curpw){
-		action_edit_pw(curpw);
-	} else if(curpwl){
-		current_pw_sublist = curpwl;
-		uilist_refresh();
 	}
 }
 
