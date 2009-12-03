@@ -560,6 +560,12 @@ action_list_move_item_up_level()
 	char str[STRING_LONG];
 	char answer[STRING_MEDIUM];
 
+	// Do nothing if searching
+	if(search_results != NULL) {
+		return;
+	}
+
+	// Do the right thing based on type
 	switch(uilist_get_highlighted_type()){
 		case PW_ITEM:
 			curpw = uilist_get_highlighted_item();
