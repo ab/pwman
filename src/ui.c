@@ -220,8 +220,12 @@ ui_run()
 		switch(ch){
 			case 'Q':
 			case 'q':
-				if(action_list_at_top_level()){
-					return;
+				if(search_results != NULL) {
+					search_remove();
+				} else {
+					if(action_list_at_top_level()){
+						return;
+					}
 				}
 				break;
 			case '?':
