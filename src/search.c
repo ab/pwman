@@ -127,6 +127,11 @@ search_apply()
 		return 1;
 	}
 
+	// Make sure we have a clean search stack so we won't get confused
+	for(depth=0; depth<MAX_SEARCH_DEPTH; depth++) {
+		stack[depth] = NULL;
+	}
+
 	// Setup for start
 	depth = 0;
 	tmpList = pwlist;
@@ -174,6 +179,7 @@ search_apply()
 		stepping_back = 1;
 		if(depth >= 0) {
 			tmpList = stack[depth];
+			stack[depth] = NULL;
 		}
 	}
 	
@@ -190,6 +196,10 @@ search_remove()
 
 	// Free the memory held by the search results
 	_search_free();
+
+	// Clear the search term too
+	free(options->search->search_term);
+	options->search->search_term = NULL;
 
 	// Back to the old screen
 	uilist_refresh();
