@@ -1,4 +1,6 @@
-0.3.10  Nick Burch <gagravarr@users.sourceforge.net>
+0.4.0  Nick Burch <gagravarr@users.sourceforge.net>
+	* search.c: new support for case insensitive searching across
+	    entries and sublists - use / to search, f for old style filtering
 	* gnupg.c: gpg_check_id now reports on expired keys (uses
 		--with-colons option to get more details from gpg to spot this)
 	* pwman.c: check that the key can be found and hasn't expired during
@@ -12,30 +14,30 @@
 	* gnupg.c: fix segfault if the secret key isn't present
 
 0.3.8   Nick Burch <gagravarr@users.sourceforge.net>
-    * pwlist.c/actions.c: support moving entries and sublists up and down
-      within their parent list, using [ and ]. (You could already move them
-      to parent or child lists)
+	* pwlist.c/actions.c: support moving entries and sublists up and down
+	  within their parent list, using [ and ]. (You could already move them
+	  to parent or child lists)
 
 0.3.7   Nick Burch <gagravarr@users.sourceforge.net>
-    * gnupg.c/pwman.c: improved handling of new files, and when you cancel the
-      gnupg passphrase input / key not found
+	* gnupg.c/pwman.c: improved handling of new files, and when you cancel the
+	  gnupg passphrase input / key not found
 
 0.3.6   Nick Burch <gagravarr@users.sourceforge.net>
 	* uilist.c: fix so we don't have an inifinite loop if no data
 
 0.3.5   Nick Burch <gagravarr@users.sourceforge.net>
-    * gnupg.c: add support for encrypting data to multiple recipients
-    * gnupg.c/actions.c/pwlist.c: make the export of passwords and lists
-      handle multiple recipients. (Normal use still only works with one)
-    * filter.c: show an on-screen alert when filtering is turned on
+	* gnupg.c: add support for encrypting data to multiple recipients
+	* gnupg.c/actions.c/pwlist.c: make the export of passwords and lists
+	  handle multiple recipients. (Normal use still only works with one)
+	* filter.c: show an on-screen alert when filtering is turned on
 
 0.3.4   Nick Burch <gagravarr@users.sourceforge.net>
-    * *.c: implement read only patch from Jon
-    * pwlist.c: XML escape data, so strings with a & in them don't break
+	* *.c: implement read only patch from Jon
+	* pwlist.c: XML escape data, so strings with a & in them don't break
 
 0.3.3   Ivan Kelly  <ivan@ivankelly.net>
-    * *.c: renamed a few functions to make it clearer where they're from
-    * uilist.c: fix for cursor going off the screen
+	* *.c: renamed a few functions to make it clearer where they're from
+	* uilist.c: fix for cursor going off the screen
 
 0.3.1	Ivan Kelly	<ivan@ivankelly.net>
 	* pwman.1: updated man page
