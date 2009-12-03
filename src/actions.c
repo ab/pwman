@@ -411,28 +411,37 @@ action_list_select_item()
 {
 	Pw* curpw;
 	PWList* curpwl;
+	PWSearchResult* cursearch;
 
-	switch(uilist_get_highlighted_type()){
-		case PW_ITEM:
-			curpw = uilist_get_highlighted_item();
-			if(curpw){
-				action_edit_pw(curpw);
-			}
-			break;
-		case PW_SUBLIST:
-			curpwl = uilist_get_highlighted_sublist();
-			if(curpwl){
-				current_pw_sublist = curpwl;
-				uilist_refresh();
-			}
-			break;
-		case PW_UPLEVEL:
-			action_list_up_one_level();
-			break;
-		case PW_NULL:
-		default:
-			/* do nothing */
-			break;
+	// Are they searching, or in normal mode?
+	if(search_results != NULL) {
+		cursearch = uilist_get_highlighted_searchresult();
+		curpwl = cursearch->sublist;
+		curpw = cursearch->entry;
+	} else {
+		switch(uilist_get_highlighted_type()){
+			case PW_ITEM:
+				curpw = uilist_get_highlighted_item();
+				break;
+			case PW_SUBLIST:
+				curpwl = uilist_get_highlighted_sublist();
+				break;
+			case PW_UPLEVEL:
+				action_list_up_one_level();
+				break;
+			case PW_NULL:
+			default:
+				/* do nothing */
+				break;
+		}
+	}
+
+	// If we picked something, display it
+	if(curpw){
+		action_edit_pw(curpw);
+	} else if(curpwl){
+		current_pw_sublist = curpwl;
+		uilist_refresh();
 	}
 }
 
@@ -676,6 +685,11 @@ action_list_move_item_up()
 	PWList *curpwl;
 	int worked = 0;
 
+	// Do nothing if searching
+	if(search_results != NULL) {
+		return;
+	}
+
 	switch(uilist_get_highlighted_type()){
 		case PW_ITEM:
 			curpw = uilist_get_highlighted_item();
@@ -703,6 +717,11 @@ action_list_move_item_down()
 	Pw* curpw;
 	PWList *curpwl;
 	int worked = 0;
+
+	// Do nothing if searching
+	if(search_results != NULL) {
+		return;
+	}
 
 	switch(uilist_get_highlighted_type()){
 		case PW_ITEM:
