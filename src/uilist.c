@@ -65,7 +65,7 @@ uilist_highlight_line(int line)
         scrollok(list, TRUE);
 }
 
-PWSearchResult*
+PWSearchResult *
 uilist_get_highlighted_searchresult() {
 	PWSearchResult *srchiter;
 	int i = -1;
