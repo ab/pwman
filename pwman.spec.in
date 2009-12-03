@@ -9,7 +9,7 @@ License: GPL
 Group: Applications/System
 URL: http://pwman.sourceforge.net/
 Source: http://prdownloads.sourceforge.net/pwman/pwman-%{version}.tar.gz
-Requires: libxml2 ncurses
+Requires: libxml2 ncurses gnupg
 BuildRequires: libxml2-devel ncurses-devel
 
 %description
