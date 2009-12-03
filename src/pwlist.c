@@ -38,6 +38,7 @@ pwlist_new(char *name)
 	strncpy(new->name, name, STRING_MEDIUM);
 	new->parent = NULL;
 	new->list = NULL;
+	new->next = NULL;
 	new->sublists = NULL;
 	debug("new_pwlist: %s", name);
 
