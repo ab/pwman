@@ -2,6 +2,7 @@
 AC_INIT([src/ui.c])
 AM_INIT_AUTOMAKE(pwman, 0.4.0)
 AM_CONFIG_HEADER(config.h)
+AC_CONFIG_FILES([pwman.spec])
 
 # Checks for programs.
 AC_PROG_CC
