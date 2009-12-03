@@ -198,8 +198,7 @@ search_remove()
 	_search_free();
 
 	// Clear the search term too
-	free(options->search->search_term);
-	options->search->search_term = NULL;
+	options->search->search_term[0] = 0;
 
 	// Back to the old screen
 	uilist_refresh();
