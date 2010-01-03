@@ -413,32 +413,36 @@ int
 pwlist_write_node(xmlNodePtr root, Pw* pw)
 {
 	xmlNodePtr node;
-	xmlChar *escaped;
 
-	// Take the inbound strings. Treat as an xmlChar, and escape
-	// Need to free the result of escape every time
+	// We need to escape the strings before storing them
+	// Otherwise, special characters (especially &) will
+	//  end up broken!
+	xmlChar *escapedName = 
+		xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->name);
+	xmlChar *escapedHost =
+		xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->host);
+	xmlChar *escapedUser =
+		xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->user);
+	xmlChar *escapedPasswd = 
+		xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->passwd);
+	xmlChar *escapedLaunch =
+		xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->launch);
 
+	// Build the entry and add in our (escaped) contents
 	node = xmlNewChild(root, NULL, (xmlChar*)"PwItem", NULL);
 
-	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->name);
-	xmlNewChild(node, NULL, (xmlChar*)"name", escaped);
-	xmlFree(escaped);
-	
-	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->host);
-	xmlNewChild(node, NULL, (xmlChar*)"host", escaped);
-	xmlFree(escaped);
+	xmlNewChild(node, NULL, (xmlChar*)"name", escapedName);
+	xmlNewChild(node, NULL, (xmlChar*)"host", escapedHost);
+	xmlNewChild(node, NULL, (xmlChar*)"user", escapedUser);
+	xmlNewChild(node, NULL, (xmlChar*)"passwd", escapedPasswd);
+	xmlNewChild(node, NULL, (xmlChar*)"launch", escapedLaunch);
 
-	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->user);
-	xmlNewChild(node, NULL, (xmlChar*)"user", escaped);
-	xmlFree(escaped);
-
-	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->passwd);
-	xmlNewChild(node, NULL, (xmlChar*)"passwd", escaped);
-	xmlFree(escaped);
-
-	escaped = xmlEncodeSpecialChars(root->doc, (xmlChar*)pw->launch);
-	xmlNewChild(node, NULL, (xmlChar*)"launch", escaped);
-	xmlFree(escaped);
+	// Finally, we need to free all our escaped versions now we're done
+	xmlFree(escapedName);
+	xmlFree(escapedHost);
+	xmlFree(escapedUser);
+	xmlFree(escapedPasswd);
+	xmlFree(escapedLaunch);
 }
 
 int
