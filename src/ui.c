@@ -456,6 +456,7 @@ ui_statusline_ask_char(char *msg, char *c, char* valid)
 char *
 ui_statusline_ask_str(char *msg, char *input, int len)
 {
+	char *tmp;
 	int x = strlen(msg) + 5;
 
 	if(input == NULL){
@@ -471,7 +472,16 @@ ui_statusline_ask_str(char *msg, char *input, int len)
 	hide_cursor();
 
 	ui_statusline_clear();
+
+	// Tabs don't play nicely with ncurses or xml
+	// So, swap any for (a single) space
+	tmp = input;
+	while(*tmp != 0) {
+		if(*tmp == 9) *tmp = ' ';
+		tmp++;
+	}
 	
+	// All done
 	return input;
 }
 
