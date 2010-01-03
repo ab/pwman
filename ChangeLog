@@ -1,3 +1,10 @@
+0.4.1  Nick Burch <gagravarr@users.sourceforge.net>
+	* *.c: avoid compiler warnings about implicit declaration of free 
+	* pwlist.c: Escape sublist names too (previously only did list entries)
+	* ui.c: Turn tabs into spaces (neither xml nor ncurses like tabs much)
+	* pwlist.c: Tweak the entry escaping to still work properly when
+		heavy compiler optimisations are enabled
+
 0.4.0  Nick Burch <gagravarr@users.sourceforge.net>
 	* search.c: new support for case insensitive searching across
 	    entries and sublists - use / to search, f for old style filtering
