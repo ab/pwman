@@ -18,6 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <stdlib.h>
 #include <pwman.h>
 
 void _stderr_print(char *fmt, va_list ap)

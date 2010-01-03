@@ -22,6 +22,7 @@
 #include <ui.h>
 #include <help.h>
 #include <time.h>
+#include <stdlib.h>
 
 char * statusline_ask_str(char *, char*, int);
 Pw *get_highlighted_item();

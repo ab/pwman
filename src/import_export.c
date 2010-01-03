@@ -20,6 +20,7 @@
 
 #include <pwman.h>
 #include <ui.h>
+#include <stdlib.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
