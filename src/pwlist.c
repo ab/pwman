@@ -449,16 +449,11 @@ int
 pwlist_write(xmlNodePtr parent, PWList *list)
 {
 	xmlNodePtr node;
-	xmlChar *escaped;
 	Pw *iter;
 	PWList *pwliter;
 	
-	// Take the inbound strings. Treat as an xmlChar, and escape
-	// Need to free the result of escape every time
-	escaped = xmlEncodeSpecialChars(parent->doc, (xmlChar*)list->name);
 	node = xmlNewChild(parent, NULL, (xmlChar*)"PwList", NULL);
-	xmlSetProp(node, (xmlChar*)"name", escaped);
-	xmlFree(escaped);
+	xmlSetProp(node, (xmlChar*)"name", (xmlChar*)list->name);
 	
 	for(iter = list->list; iter != NULL; iter = iter->next){
 		pwlist_write_node(node, iter);
