@@ -1,3 +1,11 @@
+0.4.2  Nick Burch <gagravarr@users.sourceforge.net>
+	* help.h: tweak information on what ^W and ^R do
+	* gnupg.c: correct key search logic when more than one key for a given
+	    email address exists, where some are expired and one isn't
+	* gnupg.c: fix issue with compiling expired key regular expressions on
+	    more modern libc's
+	* gnupg.c: avoid some compiler warnings 
+
 0.4.1  Nick Burch <gagravarr@users.sourceforge.net>
 	* *.c: avoid compiler warnings about implicit declaration of free 
 	* ui.c: Turn tabs into spaces (neither xml nor ncurses like tabs much)

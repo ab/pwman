@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <regex.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -239,10 +240,12 @@ gnupg_check_id(char *id)
 	regex_t reg;
 	regex_t expired_reg;
 	int pid;
-	char text[STRING_LONG], idstr[STRING_LONG], keyid[STRING_LONG], *args[4];
+	char text[STRING_LONG], idstr[STRING_LONG], keyid[STRING_LONG];
+   char exp[STRING_LONG], *args[4];
 	FILE *streams[3];
 	int id_is_key_id = 0;
-	int key_is_expired = 0;
+	int key_found = 0;
+	int key_is_expired = -1;
 	
 	debug("check_gnupg_id: check gnupg id\n");
 
@@ -253,7 +256,8 @@ gnupg_check_id(char *id)
 	}
 
 	// Build our expired key matching regexp
-	regcomp(&expired_reg, "^(pub|sub):e:", REG_EXTENDED);
+	snprintf(exp, STRING_LONG, "^(pub|sub):e:");
+	regcomp(&expired_reg, exp, REG_EXTENDED);
 
 	// Is the supplied ID really a key ID?
 	// (If it is, it's 8 chars long, and 0-9A-F)
@@ -288,22 +292,33 @@ gnupg_check_id(char *id)
 		regcomp(&reg, idstr, REG_EXTENDED);
 		if(regexec(&reg, text, 0, NULL , 0) == 0){
 			// Found the key!
+         key_found = 1;
+
 			// Check it isn't also expired
-			if(regexec(&expired_reg, text, 0, NULL , 0) == 0){
-				key_is_expired = 1;
-			}
-
-			gnupg_exec_end(pid, streams);
-
-			if(key_is_expired) {
-				return -2; 
-			}
-			return 0; 
+			if(regexec(&expired_reg, text, 0, NULL , 0) == 0) {
+            // Only mark as expired if we haven't found another
+            //  version that isn't expired
+            if(key_is_expired == -1) {
+   				key_is_expired = 1;
+            }
+			} else {
+				key_is_expired = 0;
+         }
 		}
 	}
 	
+   // Tidy up
 	gnupg_exec_end(pid, streams);
 
+   // If we found it, return found / found+expired
+   if(key_found) {
+		if(key_is_expired) {
+			return -2; 
+		}
+		return 0; 
+   }
+
+   // Didn't find it
 	return -1;
 }
 
@@ -357,7 +372,7 @@ gnupg_get_filename(char *filename, char rw)
 	} else if(rw == 'w'){
 		filename = ui_statusline_ask_str("File to write to:", filename, STRING_LONG);
 	} else {
-		return;
+		pw_abort("File request must be for read or write, got '%s'", rw);
 	}
 }
 
@@ -423,16 +438,10 @@ gnupg_check_executable()
 }
 
 int
-gnupg_write(xmlDocPtr doc, char* id, char* filename)
-{
-	return gnupg_write_many(doc, &id, 1, filename);
-}
-
-int
 gnupg_write_many(xmlDocPtr doc, char** ids, int num_ids, char* filename)
 {
 	FILE *streams[3];
-	char cmd[STRING_LONG], buf[STRING_LONG];
+	char buf[STRING_LONG];
 	char *args[10];
 	char *err;
 	int pid, i, pos, num_valid_ids;
@@ -531,6 +540,12 @@ gnupg_write_many(xmlDocPtr doc, char** ids, int num_ids, char* filename)
 }
 
 int
+gnupg_write(xmlDocPtr doc, char* id, char* filename)
+{
+	return gnupg_write_many(doc, &id, 1, filename);
+}
+
+int
 gnupg_read(char *filename, xmlDocPtr *doc)
 {
 	char *args[9], *passphrase, *data, *err, buf[STRING_LONG], *user;
@@ -539,7 +554,7 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 	int ret = 0;
 	
 	if(gnupg_check_executable() != 0){
-		*doc = xmlNewDoc("1.0");
+		*doc = xmlNewDoc((xmlChar*)"1.0");
 		return -1;
 	}
 /*
@@ -633,7 +648,7 @@ gnupg_read(char *filename, xmlDocPtr *doc)
 		free(data);
 	} else {
 		debug("gnupg_read: data is null");
-		*doc = xmlNewDoc("1.0");
+		*doc = xmlNewDoc((xmlChar*)"1.0");
 	}
 	if(err != NULL){ free(err); }
 	if(user != NULL){ free(user); }
