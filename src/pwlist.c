@@ -19,6 +19,7 @@
  */
 
 #include <pwman.h>
+#include <ui.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -484,7 +485,7 @@ pwlist_write_file()
 	
 	root = xmlNewDocNode(doc, NULL, (xmlChar*)"PWMan_PasswordList", NULL);
 
-	xmlSetProp(root, "version", vers);
+	xmlSetProp(root, (xmlChar*)"version", (xmlChar*)vers);
 	pwlist_write(root, pwlist);
 
 	xmlDocSetRootElement(doc, root);
@@ -568,7 +569,7 @@ int
 pwlist_read_file()
 {
     char fn[STRING_LONG];
-	char *buf, *cmd, *s, *text;
+	char *buf;
 	int i = 0;
 	int gnupg_worked = 0;
 	xmlNodePtr node, root;
@@ -625,25 +626,23 @@ pwlist_read_file()
 
 
 int
-pwlist_export_passwd(Pw *pw)
+pwlist_do_export(PWList *pwlist, Pw *pw)
 {
 	char vers[5];
 	char file[STRING_LONG];
 	int max_id_num = 5, i=0, valid_ids = 0;
-	char **ids; // max_id_num by STRING_LONG
+	char *ids[max_id_num];
 	
 	xmlDocPtr doc;
 	xmlNodePtr root;
 
-	if(!pw){
+	if(!pwlist && !pw) {
 		debug("export_passwd: bad password");
 		ui_statusline_msg("Bad password");
 		return -1;
 	}
 
-
 	// We need the IDs to default to empty strings
-	ids = malloc(5);
 	for(i=0; i<max_id_num; i++) {
 		ids[i] = malloc(STRING_LONG);
 		snprintf(ids[i], STRING_LONG, "");
@@ -662,6 +661,8 @@ pwlist_export_passwd(Pw *pw)
 	if(valid_ids == 0){
 		debug("export_passwd: cancel because id is blank");
 		return -1;
+	} else {
+		debug("exporting to %d ids", valid_ids);
 	}
 	
 	gnupg_get_filename(file, 'w');
@@ -674,7 +675,11 @@ pwlist_export_passwd(Pw *pw)
 
 	xmlSetProp(root, "version", vers);
 	
-	pwlist_write_node(root, pw);
+   if(pwlist) {
+      pwlist_write(root, pwlist);
+   } else {
+      pwlist_write_node(root, pw);
+   }
 
 	xmlDocSetRootElement(doc, root);
 
@@ -687,80 +692,26 @@ pwlist_export_passwd(Pw *pw)
 	for(i=0; i<max_id_num; i++) {
 		free(ids[i]);
 	}
-	free(ids);
 	
 	return 0;
 }
 
 int
-pwlist_export(PWList *pwlist)
+pwlist_export_passwd(Pw *pw)
 {
-	char vers[5];
-	char file[STRING_LONG];
-	int max_id_num = 5, i=0, valid_ids = 0;
-	char **ids; // max_id_num by STRING_LONG
-	
-	xmlDocPtr doc;
-	xmlNodePtr root;
-
-	// We need the IDs to default to empty strings
-	ids = malloc(5);
-	for(i=0; i<max_id_num; i++) {
-		ids[i] = malloc(STRING_LONG);
-		snprintf(ids[i], STRING_LONG, "");
-	}
-
-	// Fetch the IDs
-	gnupg_get_ids(ids,max_id_num);
-
-	// Check we really got one
-	for(i=0; i<max_id_num; i++) {
-		if(ids[i][0] != 0) {
-			valid_ids++;
-		}
-	}
-
-	if(valid_ids == 0) {
-		debug("export_passwd_list: cancel because id is blank");
-		return -1;
-	} else {
-		debug("exporting to %d ids", valid_ids);
-	}
-
-	// Get the filename to export to
-	gnupg_get_filename(file, 'w');
-
-	// Do the export
-	debug("export_passwd_list: construct xml doc");
-	snprintf(vers, 5, "%d", FF_VERSION);
-	doc = xmlNewDoc((xmlChar*)"1.0");
-	
-	root = xmlNewDocNode(doc, NULL, (xmlChar*)"PWMan_Export", NULL);
-
-	xmlSetProp(root, "version", vers);
-	
-	pwlist_write(root, pwlist);
-
-	xmlDocSetRootElement(doc, root);
-
-	gnupg_write_many(doc, ids, max_id_num, file);
-	
-	xmlFreeDoc(doc);
-
-	// All done.
-	// Free our ID structures
-	for(i=0; i<max_id_num; i++) {
-		free(ids[i]);
-	}
-	free(ids);
-	
-	return 0;
+   return pwlist_do_export(NULL, pw);
 }
+int
+pwlist_export_list(PWList *pwlist)
+{
+   return pwlist_do_export(pwlist, NULL);
+}
+
 
 int
 pwlist_import_passwd()
 {
-	char file[STRING_LONG], *buf, *cmd, *s, *text;
+	char file[STRING_LONG], *buf;
 	int i = 0;
 	xmlNodePtr node, root;
 	xmlDocPtr doc;

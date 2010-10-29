@@ -1,4 +1,8 @@
 0.4.2  Nick Burch <gagravarr@users.sourceforge.net>
+	* pwlist.c: rather than having pwlist_export and pwlist_export_passwd
+	    duplicate functionality, move to a common exporter
+	* pwlist.c: fix password list/entry export on newer libc's
+	* actions.c: when exporting, give a different error if key has expired
 	* help.h: tweak information on what ^W and ^R do
 	* gnupg.c: correct key search logic when more than one key for a given
 	    email address exists, where some are expired and one isn't

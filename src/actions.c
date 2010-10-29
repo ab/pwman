@@ -326,7 +326,11 @@ action_input_gpgid_dialog(InputField *fields, int num_fields, char *title)
 					// Good, valid id
 				} else {
 					// Invalid id. Warn and blank
-					snprintf(msg2, 80, "Invalid recipient '%s'", fields[i].value);
+					if(valid_id == -2) {
+					   snprintf(msg2, 80, "Key expired for '%s'", fields[i].value);
+					} else {
+					   snprintf(msg2, 80, "Invalid recipient '%s'", fields[i].value);
+					}
 					ui_statusline_msg(msg2);
 					snprintf(fields[i].value, STRING_LONG, "");
 				}
@@ -641,7 +645,7 @@ action_list_export()
 			debug("list_export: is a pwlist");
 			curpwl = uilist_get_highlighted_sublist();
 			if(curpwl){
-				pwlist_export(curpwl);
+				pwlist_export_list(curpwl);
 			}
 			break;
 		case PW_UPLEVEL:
