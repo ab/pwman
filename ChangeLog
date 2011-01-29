@@ -1,4 +1,5 @@
 0.4.3  Nick Burch <gagravarr@users.sourceforge.net>
+	* ui.c: correctly handle backspace if ncurses doesn't (eg inside screen)
 	* pwlist.c: fixes to compiler warnings 
 	* gnupg.h: added to reduce compiler warnings
 	* ui.h: add missing definition
