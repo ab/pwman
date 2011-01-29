@@ -263,11 +263,11 @@ action_input_dialog(InputField *fields, int num_fields, char *title)
 			if( (ch >= '1') && (ch <= NUM_TO_CHAR(num_fields)) ){
 				i = CHAR_TO_NUM(ch);
 				if(fields[i].autogen != NULL){
-					fields[i].value = (void*)ui_statusline_ask_str_with_autogen(
+					fields[i].value = (char*)ui_statusline_ask_str_with_autogen(
 								fields[i].name, (char*)fields[i].value, 
 								fields[i].max_length, fields[i].autogen, 0x07); 
 				} else if(fields[i].type == STRING){
-					fields[i].value = (void*)ui_statusline_ask_str(fields[i].name, 
+					fields[i].value = (char*)ui_statusline_ask_str(fields[i].name, 
 								(char*)fields[i].value, fields[i].max_length);
 				} else if(fields[i].type == INT){
 					ui_statusline_ask_num(fields[i].name, (int*)fields[i].value);

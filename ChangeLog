@@ -1,3 +1,7 @@
+0.4.3  Nick Burch <gagravarr@users.sourceforge.net>
+	* ui.h: add missing definition
+	* actions.c: correct return types, which fixes an OS/X issue
+
 0.4.2  Nick Burch <gagravarr@users.sourceforge.net>
 	* pwlist.c: rather than having pwlist_export and pwlist_export_passwd
 	    duplicate functionality, move to a common exporter
