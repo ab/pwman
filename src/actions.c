@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <ui.h>
 #include <pwman.h>
+#include <gnupg.h>
 
 extern Pw * uilist_get_highlighted_item();
 extern PWList * uilist_get_highlighted_sublist();

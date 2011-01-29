@@ -19,6 +19,7 @@
  */
 
 #include <pwman.h>
+#include <gnupg.h>
 #include <ui.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -53,6 +54,7 @@ pwlist_init()
 	pwindex = 0;
 	pwlist = NULL;
 	current_pw_sublist = NULL;
+	return 0;
 }
 
 int 
@@ -248,11 +250,11 @@ pwlist_change_list_order(PWList *pw, int moveUp) {
 	return 0;
 }
 
-int
+void
 pwlist_rename_item(Pw* pwitem, char* new_name) {
 	strncpy(pwitem->name, new_name, STRING_MEDIUM);
 }
-int
+void
 pwlist_rename_sublist(PWList *pwlist, char* new_name) {
 	strncpy(pwlist->name, new_name, STRING_MEDIUM);
 }
@@ -328,7 +330,7 @@ pwlist_add_ptr(PWList *list, Pw *new)
 	return 0;
 }
 
-int 
+void 
 pwlist_detach_pw(PWList *list, Pw *pw)
 {
 	Pw *iter, *prev;
@@ -348,7 +350,7 @@ pwlist_detach_pw(PWList *list, Pw *pw)
 	}
 }
 
-int 
+void 
 pwlist_delete_pw(PWList *list, Pw *pw)
 {
 	Pw *iter, *prev;
@@ -369,7 +371,7 @@ pwlist_delete_pw(PWList *list, Pw *pw)
 	}
 }
 
-int 
+void 
 pwlist_detach_sublist(PWList *parent, PWList *old)
 {
 	PWList *iter, *prev;
@@ -389,7 +391,7 @@ pwlist_detach_sublist(PWList *parent, PWList *old)
 	}
 }
 
-int
+void
 pwlist_delete_sublist(PWList *parent, PWList *old)
 {
 	PWList *iter, *prev;
@@ -410,7 +412,7 @@ pwlist_delete_sublist(PWList *parent, PWList *old)
 	}
 }
 
-int 
+void 
 pwlist_write_node(xmlNodePtr root, Pw* pw)
 {
 	xmlNodePtr node;
@@ -446,7 +448,7 @@ pwlist_write_node(xmlNodePtr root, Pw* pw)
 	xmlFree(escapedLaunch);
 }
 
-int
+void
 pwlist_write(xmlNodePtr parent, PWList *list)
 {
 	xmlNodePtr node;

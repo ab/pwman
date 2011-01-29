@@ -1,4 +1,6 @@
 0.4.3  Nick Burch <gagravarr@users.sourceforge.net>
+	* pwlist.c: fixes to compiler warnings 
+	* gnupg.h: added to reduce compiler warnings
 	* ui.h: add missing definition
 	* actions.c: correct return types, which fixes an OS/X issue
 

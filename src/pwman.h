@@ -128,6 +128,7 @@ PwFilter * filter_new();
 PwSearch * search_new();
 Options * options_new();
 
+int pwlist_add_ptr(PWList*, Pw*);
 Pw* pwlist_new_pw();
 PWList *pwlist_new(char*);
 #endif
