@@ -317,7 +317,7 @@ action_input_gpgid_dialog(InputField *fields, int num_fields, char *title)
 
 		if( (ch >= '1') && (ch <= NUM_TO_CHAR(num_fields)) ){
 			i = CHAR_TO_NUM(ch);
-			fields[i].value = (void*)ui_statusline_ask_str(fields[i].name, 
+			fields[i].value = (char*)ui_statusline_ask_str(fields[i].name, 
 								(char*)fields[i].value, fields[i].max_length);
 			
 			// Now verify it's a valid recipient
@@ -328,9 +328,9 @@ action_input_gpgid_dialog(InputField *fields, int num_fields, char *title)
 				} else {
 					// Invalid id. Warn and blank
 					if(valid_id == -2) {
-					   snprintf(msg2, 80, "Key expired for '%s'", fields[i].value);
+					   snprintf(msg2, 80, "Key expired for '%s'", (char*)fields[i].value);
 					} else {
-					   snprintf(msg2, 80, "Invalid recipient '%s'", fields[i].value);
+					   snprintf(msg2, 80, "Invalid recipient '%s'", (char*)fields[i].value);
 					}
 					ui_statusline_msg(msg2);
 					snprintf(fields[i].value, STRING_LONG, "");

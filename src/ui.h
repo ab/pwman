@@ -72,7 +72,7 @@ typedef enum {
 
 typedef struct {
 	char *name;
-	void *value;
+	void *value; // int* or char*
 	int max_length;
 	TYPE type;
 	char *(*autogen)(char*);
@@ -81,11 +81,14 @@ typedef struct {
 int uilist_init();
 int uilist_free();
 int uilist_refresh();
+int ui_statusline_clear();
 
 int view_pw(int i);
 
 int ui_statusline_yes_no(char *, int);
 int ui_statusline_msg(char *msg);
+void ui_statusline_ask_num(char *, int *);
+void ui_statusline_ask_char(char *, char *, char*);
 char * ui_statusline_ask_str(char *, char *, int len);
 char * ui_statusline_ask_passwd(char *, char *, int, int);
 char * ui_statusline_ask_str_with_autogen(char *msg, char *input, int len, char *(*autogen)(char *), int ch);

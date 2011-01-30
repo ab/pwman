@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <pwman.h>
+#include <ui.h>
 
 struct pwgen_element {
 	char	*str;

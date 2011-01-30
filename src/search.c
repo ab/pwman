@@ -19,7 +19,9 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <pwman.h>
+#include <ui.h>
 
 /*xtern int curitem;*/
 

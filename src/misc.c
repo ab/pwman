@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <pwman.h>
+#include <ui.h>
 
 void _stderr_print(char *fmt, va_list ap)
 {

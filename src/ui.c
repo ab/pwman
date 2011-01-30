@@ -225,7 +225,7 @@ ui_run()
 					search_remove();
 				} else {
 					if(action_list_at_top_level()){
-						return;
+						return 0;
 					}
 				}
 				break;
