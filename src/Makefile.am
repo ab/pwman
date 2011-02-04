@@ -3,9 +3,10 @@ INCLUDES = -I$(top_srcdir) -I$(includedir) \
 		
 bin_PROGRAMS = pwman convert_pwdb pwdb2csv
 
-pwman_SOURCES = options.c pwlist.c ui.c uilist.c pwman.c actions.c launch.c ui.h \
-		pwman.h help.h filter.c search.c gnupg.c pwgen.c misc.c 
+pwman_SOURCES = actions.c filter.c gnupg.c gnupg.h help.h \
+                launch.c misc.c options.c pwgen.c pwlist.c \
+                pwman.c pwman.h search.c ui.c ui.h uilist.c
 
 convert_pwdb_SOURCES = convert_pwdb.c
 
-pwdb2csv_SOURCES = pwdb2csv.c
+pwdb2csv_SOURCES = pwdb2csv.c import_export.c
