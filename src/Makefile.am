@@ -9,4 +9,5 @@ pwman_SOURCES = actions.c filter.c gnupg.c gnupg.h help.h \
 
 convert_pwdb_SOURCES = convert_pwdb.c
 
-pwdb2csv_SOURCES = pwdb2csv.c import_export.c
+# This one isn't currently used: import_export.c
+pwdb2csv_SOURCES = pwdb2csv.c 
