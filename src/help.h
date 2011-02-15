@@ -38,6 +38,7 @@ static char *help[] = {
 	"	]		move item down the list\n",
 	"	r		rename item/sublist\n",
 	"	d/del		delete item/sublist\n",
+	"	L		locate item/sublist (prints path)\n",
 	"\n",
 	"	f		enable / disable filtering\n",
 	"	/		enable / disable searching\n",

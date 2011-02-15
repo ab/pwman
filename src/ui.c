@@ -349,6 +349,9 @@ ui_run()
 					statusline_readonly();
 				}
 				break;
+			case 'L':
+				action_list_locate();
+				break;
 			case 'l':
 				action_list_launch();
 				break;

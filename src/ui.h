@@ -59,8 +59,9 @@
 #define CHAR_TO_NUM(n) (n - 49)
 
 typedef enum {
-	STRING,
-	INT
+	STRING,     // A regular string
+	INT,        // An integer
+	INFORMATION // Name only, no value, so read only
 } TYPE;
 
 typedef enum {

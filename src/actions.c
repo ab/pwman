@@ -216,6 +216,9 @@ action_input_dialog_draw_items(WINDOW* dialog_win, InputField *fields,
 		} else if(fields[i].type == INT){
 			mvwprintw(dialog_win, h, 3,
 				"%d - %s %d", (i+1), fields[i].name, *((int*)fields[i].value) );
+		} else if(fields[i].type == INFORMATION){
+			mvwprintw(dialog_win, h, 3,
+				"%d - %s", (i+1), fields[i].name);
 		}
 	}
 
@@ -272,6 +275,8 @@ action_input_dialog(InputField *fields, int num_fields, char *title)
 								(char*)fields[i].value, fields[i].max_length);
 				} else if(fields[i].type == INT){
 					ui_statusline_ask_num(fields[i].name, (int*)fields[i].value);
+				} else if(fields[i].type == INFORMATION){
+					// Easy, do nothing!
 				}
 				action_input_dialog_draw_items(dialog_win, fields, num_fields, title, msg);
 			} else if(ch == 'l'){
@@ -655,6 +660,71 @@ action_list_export()
 			/* do nothing */
 			break;
 	}
+}
+
+void _create_information_field(char* name, InputField* field)
+{
+	field->name = name;
+	field->value = NULL;
+	field->max_length = 0;
+	field->type = INFORMATION;
+}
+
+int
+action_list_locate()
+{
+	int depth = 0, count = 0;
+	char* currentName;
+	InputField* fields;
+	Pw* curpw;
+	PWList *curpwl;
+
+	switch(uilist_get_highlighted_type()){
+		case PW_ITEM:
+			curpw = uilist_get_highlighted_item();
+			if(curpw){
+				currentName = curpw->name;
+				depth = 1;
+			}
+			break;
+		case PW_SUBLIST:
+			curpwl = uilist_get_highlighted_sublist();
+			if(curpwl){
+				currentName = curpwl->name;
+				depth = 1;
+			}
+			break;
+		default:
+			/* do nothing */
+			break;
+	}
+
+	// Figure out how many parents we have
+	curpwl = current_pw_sublist;
+	while(curpwl){
+		curpwl = curpwl->parent;
+		depth++;
+	}
+	count = depth;
+
+	// Now grab their names
+	fields = calloc(sizeof(InputField), depth);
+	if(currentName){
+		depth--;
+		_create_information_field(currentName, &fields[depth]);
+	}
+	curpwl = current_pw_sublist;
+	while(curpwl){
+		depth--;
+		_create_information_field(curpwl->name, &fields[depth]);
+		curpwl = curpwl->parent;
+	}
+
+	// Have it rendered
+	action_input_dialog(fields, count, "Location of Item");
+
+	// All done, tidy up
+	free(fields);
 }
 
 int

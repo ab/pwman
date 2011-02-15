@@ -1,3 +1,7 @@
+0.4.4  Nick Burch <gagravarr@users.sourceforge.net>
+	* actions.c/ui.c: added "Locate" support, which prints out the path
+	    path in the tree to the current item
+
 0.4.3  Nick Burch <gagravarr@users.sourceforge.net>
 	* ui.c: correctly handle backspace if ncurses doesn't (eg inside screen)
 	* pwlist.c: fixes to compiler warnings 
