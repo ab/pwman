@@ -81,8 +81,9 @@ struct _PWList {
 typedef struct _PWList PWList;
 
 struct _PWSearchResult {
-	/* Will have one of these two, never both! */
+	/* Always has a sublist, whether the list or child matches */
 	PWList *sublist;
+	/* If the entry itself matches, will be present */
 	Pw *entry;
 
 	/* The next one along, as with other structs */

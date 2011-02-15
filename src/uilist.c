@@ -264,10 +264,10 @@ uilist_refresh()
 		}
 	} else {
 		for(srchiter = search_results; (srchiter != NULL); srchiter = srchiter->next) {
-			if(srchiter->sublist != NULL) {
-				num_shown = _uilist_render_sublist(srchiter->sublist, i, num_shown);
-			} else {
+			if(srchiter->entry != NULL) {
 				num_shown = _uilist_render_entry(srchiter->entry, i, num_shown);
+			} else {
+				num_shown = _uilist_render_sublist(srchiter->sublist, i, num_shown);
 			}
 			lines++;
 			i++;	

@@ -676,31 +676,46 @@ action_list_locate()
 	int depth = 0, count = 0;
 	char* currentName;
 	InputField* fields;
-	Pw* curpw;
-	PWList *curpwl;
+	Pw* curpw = NULL;
+	PWList *curpwl = NULL;
+	PWList *parent = NULL;
+	PWSearchResult* cursearch;
 
-	switch(uilist_get_highlighted_type()){
-		case PW_ITEM:
-			curpw = uilist_get_highlighted_item();
-			if(curpw){
-				currentName = curpw->name;
-				depth = 1;
-			}
-			break;
-		case PW_SUBLIST:
-			curpwl = uilist_get_highlighted_sublist();
-			if(curpwl){
-				currentName = curpwl->name;
-				depth = 1;
-			}
-			break;
-		default:
-			/* do nothing */
-			break;
+	if(search_results != NULL) {
+		cursearch = uilist_get_highlighted_searchresult();
+		curpwl = cursearch->sublist;
+		curpw = cursearch->entry;
+
+		if(curpw) {
+			parent = curpwl;
+		} else {
+			parent = curpwl->parent;
+		}
+	} else {
+		parent = current_pw_sublist;
+		switch(uilist_get_highlighted_type()){
+			case PW_ITEM:
+				curpw = uilist_get_highlighted_item();
+				break;
+			case PW_SUBLIST:
+				curpwl = uilist_get_highlighted_sublist();
+				break;
+			default:
+				/* do nothing */
+				break;
+		}
+	}
+
+	if(curpw) {
+		currentName = curpw->name;
+		depth = 1;
+	} else if(curpwl) {
+		currentName = curpwl->name;
+		depth = 1;
 	}
 
 	// Figure out how many parents we have
-	curpwl = current_pw_sublist;
+	curpwl = parent;
 	while(curpwl){
 		curpwl = curpwl->parent;
 		depth++;
@@ -713,7 +728,7 @@ action_list_locate()
 		depth--;
 		_create_information_field(currentName, &fields[depth]);
 	}
-	curpwl = current_pw_sublist;
+	curpwl = parent;
 	while(curpwl){
 		depth--;
 		_create_information_field(curpwl->name, &fields[depth]);

@@ -79,7 +79,7 @@ _search_add_if_matches(PWSearchResult* current, Pw* entry, PWList* list) {
 		) {
 			next = malloc( sizeof(PWSearchResult) );
 			next->entry = entry;
-			next->sublist = NULL;
+			next->sublist = list;
 			debug("Matched entry on host '%s'", entry->host);
 		}
 	} else {
@@ -163,7 +163,7 @@ search_apply()
 			tmp = tmpList->list;
 			while(tmp != NULL) {
 				// Test this entry
-				cur = _search_add_if_matches(cur, tmp, NULL);
+				cur = _search_add_if_matches(cur, tmp, tmpList);
 				// Next entry
 				tmp = tmp->next;
 			}
