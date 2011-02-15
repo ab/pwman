@@ -1,6 +1,9 @@
 0.4.4  Nick Burch <gagravarr@users.sourceforge.net>
+	* actions.c/search.c/uilist.c: tweaked how search works internall, so 
+	    that you have the parent of entry results - needed by "Locate"
+	    to be able to tell you where your search results really live
 	* actions.c/ui.c: added "Locate" support, which prints out the path
-	    path in the tree to the current item
+	    in the tree to the current item
 
 0.4.3  Nick Burch <gagravarr@users.sourceforge.net>
 	* ui.c: correctly handle backspace if ncurses doesn't (eg inside screen)

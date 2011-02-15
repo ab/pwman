@@ -1,3 +1,7 @@
+pwman (0.4.4-1) unstable; urgency=low
+  * Add "Locate" support to easily see where in the tree an item lives
+ -- Nick Burch <gagravarr@users.sourceforge.net>  Tue, 15 Feb 2011 22:24:00 +0000
+
 pwman (0.4.3-1) unstable; urgency=low
   * Improved handling of spaces and tabs
   * Common exporter to tidy code
