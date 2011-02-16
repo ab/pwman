@@ -1,9 +1,12 @@
 
-	PWMan by Ivan Kelly <ivan@ivankelly.net>
-	----------------------------------------
+	PWMan Password Manager
+	----------------------
 
 PWMan is a password manager which uses gpg encryption to safeguard your data.
-Some code has been taken from Jaakko Heinonen's abook.
+It provides a simple and easy to use command line (NCurses) interface to 
+manage, store, search and retrieve your passwords.
+
+The look and feel is based on Jaakko Heinonen's abook.
 
 
 INSTALLATION REQUIREMENTS
