@@ -1,5 +1,5 @@
 Source: pwman
-Section: unknown
+Section: utils
 Priority: extra
 Maintainer: Nick Burch <gagravarr@users.sourceforge.net>
 Build-Depends: debhelper (>= 7), autotools-dev, libxml2-dev, libncurses5-dev

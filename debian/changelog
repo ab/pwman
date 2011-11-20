@@ -1,3 +1,9 @@
+pwman (0.4.4-2) unstable; urgency=low
+
+  * Make various minor fixes to the debian packaging.
+
+ -- Andy Brody <andy@abrody.com>  Sat, 19 Nov 2011 22:42:48 -0800
+
 pwman (0.4.4-1) unstable; urgency=low
   * Add "Locate" support to easily see where in the tree an item lives
  -- Nick Burch <gagravarr@users.sourceforge.net>  Tue, 15 Feb 2011 22:24:00 +0000
