@@ -21,6 +21,12 @@ CROSS= --build $(DEB_BUILD_GNU_TYPE)
 endif
 
 
+configure:
+	# Make sure we generate configure and friends
+	aclocal
+	automake --gnu --add-missing
+	autoreconf
+
 
 config.status: configure
 	dh_testdir
@@ -62,8 +68,8 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 
-	# Add here commands to install the package into debian/pwman.
-	$(MAKE) DESTDIR=$(CURDIR)/debian/pwman install
+	# Add here commands to install the package into debian/tmp.
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
 
 
 # Build architecture-independent files here.
