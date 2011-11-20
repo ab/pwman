@@ -24,6 +24,7 @@ endif
 configure:
 	# Make sure we generate configure and friends
 	aclocal
+	autoheader
 	automake --gnu --add-missing
 	autoreconf
 
@@ -59,6 +60,8 @@ clean:
 	# Add here commands to clean up after the build process.
 	[ ! -f Makefile ] || $(MAKE) distclean
 	rm -f config.sub config.guess
+	rm -f Makefile.in doc/Makefile.in src/Makefile.in
+	rm -f aclocal.m4 config.h.in configure depcomp
 
 	dh_clean 
 
